@@ -8,7 +8,7 @@ import org.springframework.web.server.ResponseStatusException
 
 object SystemAuth {
     fun sjekkErSystemkallFraAzureAd(claims: JWTClaimsSet, role: UserRole): Unit {
-        erSystemkallFraAzureAd(claims, role) ?: throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        if (!erSystemkallFraAzureAd(claims, role)) throw ResponseStatusException(HttpStatus.FORBIDDEN)
     }
 
     fun erSystemkallFraAzureAd(claims: JWTClaimsSet, role: UserRole): Boolean {
