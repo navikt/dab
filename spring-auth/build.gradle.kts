@@ -15,6 +15,9 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 
+apply(plugin = "java-library")
+apply(plugin = "maven-publish")
+
 dependencies {
     implementation("no.nav.common:types:${commonVersion}")
     implementation("no.nav.common:abac:${commonVersion}")
@@ -28,8 +31,6 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5:${kotest}")
     testImplementation("io.kotest:kotest-assertions-core:$kotest")
 }
-
-apply(plugin = "maven-publish")
 
 val sourcesJar by tasks.registering(Jar::class) {
     archiveClassifier.set("sources")

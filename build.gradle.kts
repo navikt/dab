@@ -6,6 +6,8 @@
  * User Manual available at https://docs.gradle.org/7.6/userguide/building_java_projects.html
  */
 
+group = "com.github.navikt.dab"
+
 plugins {
     kotlin("jvm") version "1.8.0"
 }
