@@ -15,9 +15,6 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 
-apply(plugin = "java-library")
-apply(plugin = "maven-publish")
-
 dependencies {
     implementation("no.nav.common:types:${commonVersion}")
     implementation("no.nav.common:abac:${commonVersion}")
@@ -30,38 +27,4 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-engine:${junit}")
     testImplementation("io.kotest:kotest-runner-junit5:${kotest}")
     testImplementation("io.kotest:kotest-assertions-core:$kotest")
-}
-
-val sourcesJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("sources")
-    from(sourceSets["main"].allSource)
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            artifact(sourcesJar.get())
-
-            pom {
-                description.set("DAB felles")
-                name.set(project.name)
-                withXml {
-                    asNode().appendNode("packaging", "jar")
-                }
-                licenses {
-                    license {
-                        name.set("MIT License")
-                        name.set("https://opensource.org/licenses/MIT")
-                    }
-                }
-                developers {
-                    developer {
-                        organization.set("NAV (Arbeids- og velferdsdirektoratet) - The Norwegian Labour and Welfare Administration")
-                        organizationUrl.set("https://www.nav.no")
-                    }
-                }
-            }
-        }
-    }
 }
