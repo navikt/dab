@@ -6,8 +6,6 @@
  * User Manual available at https://docs.gradle.org/7.6/userguide/building_java_projects.html
  */
 
-group = "com.github.navikt.dab"
-
 plugins {
     kotlin("jvm") version "1.8.0"
     `java-library`
@@ -29,6 +27,8 @@ tasks.named<Test>("test") {
 
 subprojects {
     group = "com.github.navikt"
+
+    apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
 
@@ -44,7 +44,6 @@ subprojects {
             create<MavenPublication>("maven") {
                 from(components["java"])
                 artifact(sourcesJar.get())
-
                 pom {
                     description.set("DAB felles")
                     name.set(project.name)
