@@ -13,13 +13,16 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain {
+       languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
+
 
 allprojects {
     repositories {
@@ -42,13 +45,16 @@ subprojects {
     apply(plugin = "maven-publish")
 
     kotlin {
-        jvmToolchain(17)
+        jvmToolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
     }
     java {
         toolchain {
             languageVersion.set(JavaLanguageVersion.of(17))
         }
     }
+
     
 
     // java.sourceCompatibility = JavaVersion.VERSION_17
