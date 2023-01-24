@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 open class AuthorizationConfiguration : WebMvcConfigurer {
 
     @Autowired
-    private val authorizationInterceptor: AuthorizationInterceptor? = null
+    lateinit var authorizationInterceptor: AuthorizationInterceptor
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(authorizationInterceptor)
     }
