@@ -12,6 +12,10 @@ plugins {
     `maven-publish`
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 allprojects {
     repositories {
         // Use Maven Central for resolving dependencies.
