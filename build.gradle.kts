@@ -40,6 +40,15 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
+
+    kotlin {
+        jvmToolchain(17)
+    }
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
     
 
     // java.sourceCompatibility = JavaVersion.VERSION_17
