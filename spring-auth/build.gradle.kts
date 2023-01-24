@@ -1,27 +1,20 @@
-plugins {
-    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    // Apply the java-library plugin for API and implementation separation.
-}
-
-val commonVersion = "2.2023.01.10_13.49-81ddc732df3a"
-val springFramework = "5.3.24"
-val junit = "5.9.1"
-val kotest = "5.5.4"
-
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 
 dependencies {
-    implementation("no.nav.common:types:${commonVersion}")
-    implementation("no.nav.common:abac:${commonVersion}")
-    implementation("no.nav.common:auth:${commonVersion}")
+    implementation(libs.nav.common.auth)
+    implementation(libs.nav.common.abac)
+    implementation(libs.nav.common.types)
 
-    implementation("org.springframework:spring-context:${springFramework}")
-    implementation("org.springframework:spring-web:${springFramework}")
+    implementation(libs.slf4j)
+    implementation(libs.nimbusds.jose.jwt)
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:${junit}")
-    testImplementation("io.kotest:kotest-runner-junit5:${kotest}")
-    testImplementation("io.kotest:kotest-assertions-core:$kotest")
+    implementation(libs.spring.context)
+    implementation(libs.spring.web)
+
+    testImplementation(libs.junit.kotlin)
+    testImplementation(libs.junit.engine)
+    testImplementation(libs.kotest.assertions)
+    testImplementation(libs.kotest.runner)
 }

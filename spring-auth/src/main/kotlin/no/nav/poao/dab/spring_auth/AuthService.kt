@@ -1,19 +1,15 @@
 package no.nav.poao.dab.spring_auth
 
+import org.slf4j.LoggerFactory
 import no.nav.common.abac.Pep
 import no.nav.common.auth.context.AuthContextHolder
-import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.EksternBrukerId
-import no.nav.common.types.identer.EnhetId
-import no.nav.common.types.identer.Fnr
-import no.nav.common.types.identer.Id
+import no.nav.common.types.identer.*
 import no.nav.poao.dab.spring_auth.SystemAuth.sjekkErSystemkallFraAzureAd
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
-import no.nav.common.types.identer.NavIdent
 
 @Service
 class AuthService(
@@ -21,6 +17,7 @@ class AuthService(
     private val veilarbPep: Pep,
     private val personService: PersonService,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
     private val internBrukerAuth: InternBrukerAuth = InternBrukerAuth(veilarbPep)
     private val eksternBrukerAuth: EksternBrukerAuth = EksternBrukerAuth(personService)
 
@@ -80,9 +77,20 @@ class AuthService(
     val innloggetBrukerIdent: Optional<String>
         get() = authContextHolder.uid
 
+    fun sjekkAtApplikasjonErIAllowList(allowlist: Array<String>) = sjekkAtApplikasjonErIAllowList(allowlist.asList())
+    fun sjekkAtApplikasjonErIAllowList(allowlist: List<String?>) {
+        val appname = principal().getFullAppName()
+        if (allowlist.isNotEmpty() && allowlist.contains(appname)) {
+            return
+        }
+        log.error("Applikasjon {} er ikke allowlist", appname)
+        throw ResponseStatusException(HttpStatus.FORBIDDEN)
+    }
+
     fun erEksternBruker() = authContextHolder.erEksternBruker()
     fun erInternBruker() = authContextHolder.erInternBruker()
     fun erSystemBruker() = authContextHolder.erSystemBruker()
+    fun erSystemBrukerFraAzureAd(): Boolean = principal() is SystemPrincipal
 
     private val aktorIdForEksternBruker: Optional<AktorId>
         get() {

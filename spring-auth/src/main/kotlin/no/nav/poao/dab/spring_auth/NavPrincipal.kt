@@ -14,7 +14,7 @@ sealed class NavPrincipal(
     private fun isAzure() = jwtClaimsSet.issuer.contains("microsoftonline.com")
     private fun isTokenX() = jwtClaimsSet.issuer.contains("tokendings")
 
-    protected fun getFullAppName(): String? { //  "cluster:team:app"
+    fun getFullAppName(): String? { //  "cluster:team:app"
         return when {
             isAzure() -> jwtClaimsSet.getStringClaim("azp_name")
             isTokenX() -> jwtClaimsSet.getStringClaim("client_id")
