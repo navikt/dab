@@ -1,9 +1,6 @@
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     // Apply the java-library plugin for API and implementation separation.
-    `java-library`
-    kotlin("jvm")
-    `maven-publish`
 }
 
 val commonVersion = "2.2023.01.10_13.49-81ddc732df3a"
