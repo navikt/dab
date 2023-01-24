@@ -12,9 +12,7 @@ plugins {
     `maven-publish`
 }
 
-kotlin {
-    jvmToolchain(17)
-}
+
 
 allprojects {
     repositories {
@@ -35,8 +33,16 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
-
-    java.sourceCompatibility = JavaVersion.VERSION_17
+    
+    kotlin {
+        jvmToolchain(17)
+    }
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
+    // java.sourceCompatibility = JavaVersion.VERSION_17
 
     val sourcesJar by tasks.registering(Jar::class) {
         archiveClassifier.set("sources")
