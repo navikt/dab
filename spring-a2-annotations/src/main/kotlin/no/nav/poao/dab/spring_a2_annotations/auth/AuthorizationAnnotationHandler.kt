@@ -9,18 +9,26 @@ import org.springframework.web.server.ResponseStatusException
 import java.lang.reflect.Method
 import java.util.*
 import javax.servlet.http.HttpServletRequest
+import kotlin.collections.List
 
 class AuthorizationAnnotationHandler(private val authService: AuthService) {
     private fun authorizeRequest(annotation: Annotation, request: HttpServletRequest) {
         authService.innloggetBrukerIdent ?: throw UnauthorizedException("Missing token")
-        if (annotation is AuthorizeFnr) {
-            val fnr = Fnr.of(getFnr(request))
-            val allowlist = annotation.allowlist
-            authorizeFnr(fnr, allowlist)
-        } else if (annotation is AuthorizeAktorId) {
-            val allowlist = annotation.allowlist
-            val aktorId = AktorId.of(getAktorId(request))
-            authorizeAktorId(aktorId, allowlist)
+        when (annotation) {
+            is AuthorizeFnr -> {
+                val fnr = Fnr.of(getFnr(request))
+                val allowlist = annotation.allowlist
+                authorizeFnr(fnr, allowlist)
+            }
+            is AuthorizeAktorId -> {
+                val allowlist = annotation.allowlist
+                val aktorId = AktorId.of(getAktorId(request))
+                authorizeAktorId(aktorId, allowlist)
+            }
+            is OnlyInternBruker -> {
+                if (!authService.erInternBruker())
+                    throw ResponseStatusException(HttpStatus.FORBIDDEN, "Bare internbruker tillatt")
+            }
         }
     }
 
@@ -41,13 +49,13 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
     }
 
     fun doAuthorizationCheckIfTagged(handlerMethod: Method, request: HttpServletRequest) {
-        Optional.ofNullable(getAnnotation(handlerMethod)) // Skip if not tagged
-            .ifPresent { annotation: Annotation -> authorizeRequest(annotation, request) }
+        getRelevantAnnotations(handlerMethod) // Skip if not tagged
+            .map { annotation: Annotation -> authorizeRequest(annotation, request) }
     }
 
-    protected fun getAnnotation(method: Method): Annotation? {
-        return findAnnotation(method.annotations)
-            ?: findAnnotation(method.declaringClass.annotations)
+    protected fun getRelevantAnnotations(method: Method): List<Annotation> {
+        return method.annotations.filter { SUPPORTED_ANNOTATIONS.contains(it.annotationClass) } +
+                method.declaringClass.annotations.filter { SUPPORTED_ANNOTATIONS.contains(it.annotationClass) }
     }
 
     private fun getFnr(request: HttpServletRequest): String {
@@ -62,11 +70,8 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
     companion object {
         private val SUPPORTED_ANNOTATIONS = listOf(
             AuthorizeFnr::class,
-            AuthorizeAktorId::class
+            AuthorizeAktorId::class,
+            OnlyInternBruker::class
         )
-
-        private fun findAnnotation(annotations: Array<Annotation>): Annotation? {
-            return annotations.firstOrNull { SUPPORTED_ANNOTATIONS.contains(it.annotationClass) }
-        }
     }
 }
