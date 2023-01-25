@@ -23,10 +23,14 @@ class AuthService(
     private val eksternBrukerAuth: EksternBrukerAuth = EksternBrukerAuth(personService)
 
     private fun principal(): NavPrincipal {
-        return NavPrincipal.of(
-            authContextHolder.requireIdTokenClaims(),
-            authContextHolder.role.get()
-        )
+        try {
+            return NavPrincipal.of(
+                authContextHolder.requireIdTokenClaims(),
+                authContextHolder.role.get()
+            )
+        } catch (exception: IllegalStateException) {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+        }
     }
 
     fun sjekkTilgangTilPerson(ident: EksternBrukerId) {
