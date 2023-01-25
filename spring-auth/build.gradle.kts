@@ -1,3 +1,7 @@
+plugins {
+    id("dab.kotlin-libary")
+}
+
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
