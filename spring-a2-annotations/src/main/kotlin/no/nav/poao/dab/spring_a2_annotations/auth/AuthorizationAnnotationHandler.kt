@@ -12,10 +12,7 @@ import javax.servlet.http.HttpServletRequest
 
 class AuthorizationAnnotationHandler(private val authService: AuthService) {
     private fun authorizeRequest(annotation: Annotation, request: HttpServletRequest) {
-        val idToken = authService.innloggetBrukerIdent
-        if (idToken.isEmpty) {
-            throw UnauthorizedException("Missing token")
-        }
+        val idToken = authService.innloggetBrukerIdent ?: throw UnauthorizedException("Missing token")
         if (annotation is AuthorizeFnr) {
             val fnr = Fnr.of(getFnr(request))
             val allowlist = annotation.allowlist

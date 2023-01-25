@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 
 @Service
@@ -74,8 +75,8 @@ class AuthService(
                 else -> NavIdent.of(it.jwtClaimsSet.subject)
             }
         }
-    val innloggetBrukerIdent: Optional<String>
-        get() = authContextHolder.uid
+    val innloggetBrukerIdent: String?
+        get() = authContextHolder.uid.getOrNull()
 
     fun sjekkAtApplikasjonErIAllowList(allowlist: Array<String>) = sjekkAtApplikasjonErIAllowList(allowlist.asList())
     fun sjekkAtApplikasjonErIAllowList(allowlist: List<String?>) {

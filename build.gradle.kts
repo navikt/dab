@@ -36,6 +36,10 @@ subprojects {
 
     java.sourceCompatibility = JavaVersion.VERSION_17
 
+    kotlin {
+        jvmToolchain(17)
+    }
+
     val sourcesJar by tasks.registering(Jar::class) {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
