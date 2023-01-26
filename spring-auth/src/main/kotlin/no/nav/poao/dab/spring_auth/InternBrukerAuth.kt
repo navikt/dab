@@ -2,7 +2,6 @@ package no.nav.poao.dab.spring_auth;
 
 import no.nav.common.abac.Pep
 import no.nav.common.abac.domain.request.ActionId
-import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.NavIdent
 import org.springframework.http.HttpStatus

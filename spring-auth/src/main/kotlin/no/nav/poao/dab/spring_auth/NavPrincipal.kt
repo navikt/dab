@@ -5,6 +5,7 @@ import no.nav.common.auth.Constants
 import no.nav.common.auth.Constants.ID_PORTEN_PID_CLAIM
 import no.nav.common.auth.context.UserRole
 import no.nav.common.types.identer.EksternBrukerId
+import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 
 sealed class NavPrincipal(
@@ -39,7 +40,7 @@ class VeilederPrincipal(jwtClaimsSet: JWTClaimsSet): NavPrincipal(jwtClaimsSet) 
 }
 class EksternBrukerPrincipal(jwtClaimsSet: JWTClaimsSet): NavPrincipal(jwtClaimsSet) {
     val userRole = UserRole.EKSTERN
-    fun brukerIdent() = EksternBrukerId.of(jwtClaimsSet.getStringClaim(ID_PORTEN_PID_CLAIM))
+    fun brukerIdent() = Fnr.of(jwtClaimsSet.getStringClaim(ID_PORTEN_PID_CLAIM))
 }
 class SystemPrincipal(jwtClaimsSet: JWTClaimsSet): NavPrincipal(jwtClaimsSet) {
     val userRole = UserRole.SYSTEM
