@@ -21,7 +21,6 @@ class AuthService(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     private val internBrukerAuth: InternBrukerAuth = InternBrukerAuth(veilarbPep)
-    private val eksternBrukerAuth: EksternBrukerAuth = EksternBrukerAuth(personService)
 
     private fun principal(): NavPrincipal {
         try {
