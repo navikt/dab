@@ -49,7 +49,7 @@ class AuthService(
     fun harTilgangTilEnhet(enhet: EnhetId): Boolean {
         return when {
             erEksternBruker() -> return true
-            else -> veilarbPep.harVeilederTilgangTilEnhet(innloggetVeilederIdent, enhet)
+            else -> veilarbPep.harVeilederTilgangTilEnhet(getInnloggetVeilederIdent(), enhet)
         }
     }
     fun sjekkTilgangTilEnhet(enhet: EnhetId) {
@@ -61,24 +61,23 @@ class AuthService(
     }
 
     fun sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId: AktorId) {
-        val navIdent = innloggetVeilederIdent
+        val navIdent = getInnloggetVeilederIdent()
         internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(navIdent, aktorId)
     }
 
-    val innloggetVeilederIdent: NavIdent
-        get() {
-            val principal = principal()
-            return when (principal) {
-                is VeilederPrincipal -> principal.navIdent()
-                else -> throw ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke veileder")
-            }
+    fun getInnloggetVeilederIdent(): NavIdent {
+        val principal = principal()
+        return when (principal) {
+            is VeilederPrincipal -> principal.navIdent()
+            else -> throw ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke veileder")
         }
-    fun getLoggedInnUser() {
-        principal().let {
+    }
+    fun getLoggedInnUser(): Id {
+        return principal().let {
             when (it) {
                 is VeilederPrincipal -> it.navIdent()
                 is EksternBrukerPrincipal -> it.brukerIdent()
-                else -> NavIdent.of(it.jwtClaimsSet.subject)
+                else -> NavIdent.of(it.jwtClaimsSet.subject) // "srvveilarbdialog"
             }
         }
     }
