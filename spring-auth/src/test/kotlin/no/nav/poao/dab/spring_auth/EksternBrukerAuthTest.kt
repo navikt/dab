@@ -7,6 +7,7 @@ import no.nav.common.auth.context.UserRole
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.Fnr
+import no.nav.poao.dab.spring_auth.EksternBrukerAuth.sjekkEksternBrukerHarTilgang
 import org.junit.jupiter.api.Test
 import org.springframework.web.server.ResponseStatusException
 
@@ -21,11 +22,10 @@ class EksternBrukerAuthTest {
         }
     }
     val brukerId = Fnr.of("12121212121")
-    val auth = EksternBrukerAuth(mockPersonService)
 
     @Test
     fun skal_tillate_bruker_med_riktig_fnr_i_token() {
-        auth.sjekkEksternBrukerHarTilgang(
+        sjekkEksternBrukerHarTilgang(
             NavPrincipal.of(
                 JWTClaimsSet.Builder()
                     .claim("acr", "Level4")
@@ -39,7 +39,7 @@ class EksternBrukerAuthTest {
     @Test
     fun skal_blokkere_bruker_med_annet_fnr_i_token() {
         shouldThrow<ResponseStatusException> {
-            auth.sjekkEksternBrukerHarTilgang(
+            sjekkEksternBrukerHarTilgang(
                 NavPrincipal.of(
                     JWTClaimsSet.Builder()
                         .claim("acr", "Level4")
@@ -54,7 +54,7 @@ class EksternBrukerAuthTest {
     @Test
     fun skal_blokkere_brukere_uten_nivå_4() {
         shouldThrow<ResponseStatusException> {
-            auth.sjekkEksternBrukerHarTilgang(
+            sjekkEksternBrukerHarTilgang(
                 NavPrincipal.of(
                     JWTClaimsSet.Builder()
                         .claim("acr", "Level3")
