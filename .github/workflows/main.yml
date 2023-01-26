@@ -1,10 +1,13 @@
 name: Test, build and publish
 
-on: push
+on:
+  push:
+    branches:
+      - main
 
 jobs:
-  build:
-    name: Run tests
+  release:
+    name: Create Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -14,23 +17,18 @@ jobs:
         with:
           arguments: build
 
-  release:
-    name: Create Release
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v1
       - name: Set release tag
         run: |
           export TAG_NAME="$(TZ="Europe/Oslo" date +%Y.%m.%d-%H.%M).$(echo $GITHUB_SHA | cut -c 1-12)"
           echo "RELEASE_TAG=$TAG_NAME" >> $GITHUB_ENV
+
       - name: Set changelog
         id: changelog
         # (Escape newlines see https://github.com/actions/create-release/issues/25)
         run: |
           text="$(git --no-pager log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%h %s")"
           echo "::set-output name=CHANGELOG::$text"
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@latest
