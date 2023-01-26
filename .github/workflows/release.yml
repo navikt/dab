@@ -1,9 +1,13 @@
-name: relese
+name: release
 
 on:
   push:
     branches:
       - main
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   release:
