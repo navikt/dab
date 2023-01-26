@@ -18,7 +18,7 @@ class AuthService(
     private val authContextHolder: AuthContextHolder,
     private val veilarbPep: Pep,
     private val personService: PersonService,
-) {
+) : IAuthService {
     private val log = LoggerFactory.getLogger(javaClass)
     private val internBrukerAuth: InternBrukerAuth = InternBrukerAuth(veilarbPep)
 
@@ -37,7 +37,7 @@ class AuthService(
         return if (this is Fnr) this else personService.getFnrForAktorId(this)
     }
 
-    fun sjekkTilgangTilPerson(ident: EksternBrukerId) {
+    override fun sjekkTilgangTilPerson(ident: EksternBrukerId) {
         val principal = principal()
         when (principal) {
             is EksternBrukerPrincipal -> sjekkEksternBrukerHarTilgang(principal, ident.toFnr())
@@ -46,13 +46,13 @@ class AuthService(
         }
     }
 
-    fun harTilgangTilEnhet(enhet: EnhetId): Boolean {
+    override fun harTilgangTilEnhet(enhet: EnhetId): Boolean {
         return when {
             erEksternBruker() -> return true
             else -> veilarbPep.harVeilederTilgangTilEnhet(getInnloggetVeilederIdent(), enhet)
         }
     }
-    fun sjekkTilgangTilEnhet(enhet: EnhetId) {
+    override fun sjekkTilgangTilEnhet(enhet: EnhetId) {
         when {
             erEksternBruker() -> return
             else -> if (!harTilgangTilEnhet(enhet))
@@ -60,19 +60,19 @@ class AuthService(
         }
     }
 
-    fun sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId: AktorId) {
+    override fun sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId: AktorId) {
         val navIdent = getInnloggetVeilederIdent()
         internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(navIdent, aktorId)
     }
 
-    fun getInnloggetVeilederIdent(): NavIdent {
+    override fun getInnloggetVeilederIdent(): NavIdent {
         val principal = principal()
         return when (principal) {
             is VeilederPrincipal -> principal.navIdent()
             else -> throw ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke veileder")
         }
     }
-    fun getLoggedInnUser(): Id {
+    override fun getLoggedInnUser(): Id {
         return principal().let {
             when (it) {
                 is VeilederPrincipal -> it.navIdent()
@@ -82,10 +82,10 @@ class AuthService(
         }
     }
 
-    fun getInnloggetBrukerIdent() = authContextHolder.uid.getOrNull()
+    override fun getInnloggetBrukerIdent() = authContextHolder.uid.getOrNull()
 
-    fun sjekkAtApplikasjonErIAllowList(allowlist: Array<String>) = sjekkAtApplikasjonErIAllowList(allowlist.asList())
-    fun sjekkAtApplikasjonErIAllowList(allowlist: List<String?>) {
+    override fun sjekkAtApplikasjonErIAllowList(allowlist: Array<String>) = sjekkAtApplikasjonErIAllowList(allowlist.asList())
+    override fun sjekkAtApplikasjonErIAllowList(allowlist: List<String?>) {
         val appname = principal().getFullAppName()
         if (allowlist.isNotEmpty() && allowlist.contains(appname)) {
             return
@@ -94,10 +94,10 @@ class AuthService(
         throw ResponseStatusException(HttpStatus.FORBIDDEN)
     }
 
-    fun erEksternBruker() = authContextHolder.erEksternBruker()
-    fun erInternBruker() = authContextHolder.erInternBruker()
-    fun erSystemBruker() = authContextHolder.erSystemBruker()
-    fun erSystemBrukerFraAzureAd(): Boolean = principal() is SystemPrincipal
+    override fun erEksternBruker() = authContextHolder.erEksternBruker()
+    override fun erInternBruker() = authContextHolder.erInternBruker()
+    override fun erSystemBruker() = authContextHolder.erSystemBruker()
+    override fun erSystemBrukerFraAzureAd(): Boolean = principal() is SystemPrincipal
 
     private val aktorIdForEksternBruker: Optional<AktorId>
         get() {
