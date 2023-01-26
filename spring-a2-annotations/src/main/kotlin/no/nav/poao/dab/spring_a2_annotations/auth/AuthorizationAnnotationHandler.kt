@@ -13,7 +13,7 @@ import kotlin.collections.List
 
 class AuthorizationAnnotationHandler(private val authService: AuthService) {
     private fun authorizeRequest(annotation: Annotation, request: HttpServletRequest) {
-        authService.innloggetBrukerIdent ?: throw UnauthorizedException("Missing token")
+        authService.getInnloggetBrukerIdent() ?: throw UnauthorizedException("Missing token")
         when (annotation) {
             is AuthorizeFnr -> {
                 val fnr = Fnr.of(getFnr(request))
