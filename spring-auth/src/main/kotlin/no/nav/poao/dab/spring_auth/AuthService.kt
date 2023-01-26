@@ -73,16 +73,17 @@ class AuthService(
                 else -> throw ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke veileder")
             }
         }
-    val loggedInnUser: Id
-        get() = principal().let {
+    fun getLoggedInnUser() {
+        principal().let {
             when (it) {
                 is VeilederPrincipal -> it.navIdent()
                 is EksternBrukerPrincipal -> it.brukerIdent()
                 else -> NavIdent.of(it.jwtClaimsSet.subject)
             }
         }
-    val innloggetBrukerIdent: String?
-        get() = authContextHolder.uid.getOrNull()
+    }
+
+    fun getInnloggetBrukerIdent() = authContextHolder.uid.getOrNull()
 
     fun sjekkAtApplikasjonErIAllowList(allowlist: Array<String>) = sjekkAtApplikasjonErIAllowList(allowlist.asList())
     fun sjekkAtApplikasjonErIAllowList(allowlist: List<String?>) {
