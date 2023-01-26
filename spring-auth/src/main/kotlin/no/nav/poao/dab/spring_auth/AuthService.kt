@@ -46,10 +46,11 @@ class AuthService(
         }
     }
 
-    fun sjekKvpTilgang(enhet: EnhetId): Boolean {
-        return when {
-            erEksternBruker() -> true
-            else -> veilarbPep.harVeilederTilgangTilEnhet(innloggetVeilederIdent, enhet)
+    fun sjekkKvpTilgang(enhet: EnhetId) {
+        when {
+            erEksternBruker() -> return
+            else -> if (!veilarbPep.harVeilederTilgangTilEnhet(innloggetVeilederIdent, enhet))
+                throw ResponseStatusException(HttpStatus.FORBIDDEN, "Veileder har ikke tilgang til kontor-enhet")
         }
     }
 
