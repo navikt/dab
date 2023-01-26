@@ -13,7 +13,7 @@ import org.springframework.web.server.ResponseStatusException
 
 class EksternBrukerAuthTest {
 
-    val mockPersonService = object: PersonService {
+    val mockPersonService = object: IPersonService {
         override fun getFnrForAktorId(aktorId: EksternBrukerId): Fnr {
             return Fnr.of("12121212121")
         }

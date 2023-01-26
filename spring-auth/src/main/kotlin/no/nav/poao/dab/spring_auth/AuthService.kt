@@ -17,7 +17,7 @@ import kotlin.jvm.optionals.getOrNull
 class AuthService(
     private val authContextHolder: AuthContextHolder,
     private val veilarbPep: Pep,
-    private val personService: PersonService,
+    private val personService: IPersonService,
 ) : IAuthService {
     private val log = LoggerFactory.getLogger(javaClass)
     private val internBrukerAuth: InternBrukerAuth = InternBrukerAuth(veilarbPep)

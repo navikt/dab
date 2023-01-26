@@ -4,7 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.Fnr
 
-interface PersonService {
+interface IPersonService {
     fun getFnrForAktorId(aktorId: EksternBrukerId): Fnr
     fun getAktorIdForPersonBruker(eksternBrukerId: EksternBrukerId): AktorId
 }
