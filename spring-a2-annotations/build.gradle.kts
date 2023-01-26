@@ -1,3 +1,7 @@
+plugins {
+    id("dab.kotlin-libary")
+}
+
 dependencies {
     implementation(libs.nav.common.types)
     implementation(libs.spring.context)

@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import no.nav.common.abac.Pep
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.types.identer.*
+import no.nav.poao.dab.spring_auth.EksternBrukerAuth.sjekkEksternBrukerHarTilgang
 import no.nav.poao.dab.spring_auth.SystemAuth.sjekkErSystemkallFraAzureAd
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -33,21 +34,16 @@ class AuthService(
         }
     }
 
+    private fun EksternBrukerId.toFnr(): Fnr {
+        return if (this is Fnr) this else personService.getFnrForAktorId(this)
+    }
+
     fun sjekkTilgangTilPerson(ident: EksternBrukerId) {
         val principal = principal()
         when (principal) {
-            is EksternBrukerPrincipal -> eksternBrukerAuth.sjekkEksternBrukerHarTilgang(principal, ident)
+            is EksternBrukerPrincipal -> sjekkEksternBrukerHarTilgang(principal, ident.toFnr())
             is SystemPrincipal -> sjekkErSystemkallFraAzureAd(authContextHolder.requireIdTokenClaims(), authContextHolder.role.get())
-            is VeilederPrincipal -> sjekkInternBrukerHarTilgang(ident)
-        }
-    }
-
-    private fun sjekkInternBrukerHarTilgang(eksternBrukerId: EksternBrukerId) {
-        val aktorId = personService.getAktorIdForPersonBruker(eksternBrukerId)
-        val principal = principal()
-        when (principal) {
-            is VeilederPrincipal -> internBrukerAuth.sjekkInternbrukerHarLeseTilgangTilPerson(principal.navIdent(), aktorId)
-            else -> IllegalStateException("Fant ikke token til innlogget bruker")
+            is VeilederPrincipal -> internBrukerAuth.sjekkInternbrukerHarLeseTilgangTilPerson(principal.navIdent(), ident.toFnr())
         }
     }
 
