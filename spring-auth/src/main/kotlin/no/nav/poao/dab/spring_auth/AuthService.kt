@@ -104,4 +104,8 @@ class AuthService(
                 else -> Optional.empty()
             }
         }
+
+    override fun getInnloggetBrukerToken(): String {
+        return authContextHolder.requireIdTokenString();
+    }
 }
