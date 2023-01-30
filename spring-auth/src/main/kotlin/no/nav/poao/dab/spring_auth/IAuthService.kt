@@ -14,6 +14,7 @@ interface IAuthService {
     fun erEksternBruker(): Boolean
     fun erInternBruker(): Boolean
     fun erSystemBruker(): Boolean
+    fun erLoggetInn(): Boolean
     fun erSystemBrukerFraAzureAd(): Boolean
     fun getInnloggetBrukerToken(): String
 }
