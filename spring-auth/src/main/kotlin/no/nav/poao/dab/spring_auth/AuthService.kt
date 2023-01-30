@@ -77,12 +77,10 @@ class AuthService(
             when (it) {
                 is VeilederPrincipal -> it.navIdent()
                 is EksternBrukerPrincipal -> it.brukerIdent()
-                else -> NavIdent.of(it.jwtClaimsSet.subject) // "srvveilarbdialog"
+                else -> NavIdent.of(it.jwtClaimsSet.subject) // Ex: "dev-fss:pto:veilarbdialog"
             }
         }
     }
-
-    override fun getInnloggetBrukerIdent() = authContextHolder.uid.getOrNull()
 
     override fun sjekkAtApplikasjonErIAllowList(allowlist: Array<String>) = sjekkAtApplikasjonErIAllowList(allowlist.asList())
     override fun sjekkAtApplikasjonErIAllowList(allowlist: List<String?>) {
