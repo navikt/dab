@@ -9,7 +9,6 @@ interface IAuthService {
     fun sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId: AktorId)
     fun getInnloggetVeilederIdent(): NavIdent
     fun getLoggedInnUser(): Id
-    fun getInnloggetBrukerIdent(): String?
     fun sjekkAtApplikasjonErIAllowList(allowlist: Array<String>)
     fun sjekkAtApplikasjonErIAllowList(allowlist: List<String?>)
     fun erEksternBruker(): Boolean
