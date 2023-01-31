@@ -94,9 +94,7 @@ class AuthService(
     override fun erEksternBruker() = authContextHolder.erEksternBruker()
     override fun erInternBruker() = authContextHolder.erInternBruker()
     override fun erSystemBruker() = authContextHolder.erSystemBruker()
-    override fun erLoggetInn(): Boolean {
-        return authContextHolder.idTokenString.isEmpty
-    }
+    override fun erLoggetInn() = !authContextHolder.idTokenString.isEmpty
 
     override fun erSystemBrukerFraAzureAd(): Boolean = principal() is SystemPrincipal
 
