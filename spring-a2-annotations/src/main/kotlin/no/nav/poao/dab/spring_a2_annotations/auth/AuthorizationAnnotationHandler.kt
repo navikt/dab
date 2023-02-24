@@ -1,14 +1,12 @@
 package no.nav.poao.dab.spring_a2_annotations.auth
 
-import org.slf4j.LoggerFactory
+import jakarta.servlet.http.HttpServletRequest
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.AuthService
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.lang.reflect.Method
-import java.util.*
-import javax.servlet.http.HttpServletRequest
 import kotlin.collections.List
 
 class AuthorizationAnnotationHandler(private val authService: AuthService) {
