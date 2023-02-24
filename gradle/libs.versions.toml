@@ -1,20 +1,20 @@
 [versions]
-spring-boot = "5.3.24"
-nav-common = "2.2023.01.10_13.49-81ddc732df3a"
+spring-framework = "6.0.5"
+nav-common = "3.2023.02.22_21.28-b300b38ac200"
 kotest = "5.5.4"
 junit-version = "5.9.1"
-servlet-api-version = "2.5"
+servlet-api-version = "6.0.0"
 slf4j-version = "1.7.36"
 nimbusds = "9.23"
 
 [libraries]
-spring-context = { module = "org.springframework:spring-context", version.ref = "spring-boot" }
-spring-web = { module = "org.springframework:spring-web", version.ref = "spring-boot" }
-spring-webmcvc = { module = "org.springframework:spring-webmvc", version.ref = "spring-boot" }
-servlet-api = { module = "javax.servlet:servlet-api", version.ref = "servlet-api-version" }
-nav-common-types = { module = "no.nav.common:types", version.ref = "nav-common" }
-nav-common-auth = { module = "no.nav.common:auth", version.ref = "nav-common" }
-nav-common-abac = { module = "no.nav.common:abac", version.ref = "nav-common" }
+spring-context = { module = "org.springframework:spring-context", version.ref = "spring-framework" }
+spring-web = { module = "org.springframework:spring-web", version.ref = "spring-framework" }
+spring-webmcvc = { module = "org.springframework:spring-webmvc", version.ref = "spring-framework" }
+servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "servlet-api-version" }
+nav-common-types = { module = "com.github.navikt.common-java-modules:types", version.ref = "nav-common" }
+nav-common-auth = { module = "com.github.navikt.common-java-modules:auth", version.ref = "nav-common" }
+nav-common-abac = { module = "com.github.navikt.common-java-modules:abac", version.ref = "nav-common" }
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-version" }
 junit-kotlin = { module = "org.jetbrains.kotlin:kotlin-test-junit5" }
 kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
