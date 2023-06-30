@@ -42,14 +42,14 @@ class AuthService(
         when (principal) {
             is EksternBrukerPrincipal -> sjekkEksternBrukerHarTilgang(principal, ident.toFnr())
             is SystemPrincipal -> sjekkErSystemkallFraAzureAd(authContextHolder.requireIdTokenClaims(), authContextHolder.role.get())
-            is VeilederPrincipal -> internBrukerAuth.sjekkInternbrukerHarLeseTilgangTilPerson(requereInternbrukerOid(), ident.toFnr())
+            is VeilederPrincipal -> internBrukerAuth.sjekkInternbrukerHarLeseTilgangTilPerson(requireInternbrukerOid(), ident.toFnr())
         }
     }
 
     override fun harTilgangTilEnhet(enhet: EnhetId): Boolean {
         return when {
             erEksternBruker() -> return true
-            else -> poaoTilgangClient.evaluatePolicy(NavAnsattTilgangTilNavEnhetPolicyInput(requereInternbrukerOid(), enhet.get())).get()?.isPermit ?: false
+            else -> poaoTilgangClient.evaluatePolicy(NavAnsattTilgangTilNavEnhetPolicyInput(requireInternbrukerOid(), enhet.get())).get()?.isPermit ?: false
         }
     }
     override fun sjekkTilgangTilEnhet(enhet: EnhetId) {
@@ -61,10 +61,10 @@ class AuthService(
     }
 
     override fun sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId: AktorId) {
-        internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(requereInternbrukerOid(), aktorId)
+        internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(requireInternbrukerOid(), aktorId)
     }
 
-    private fun requereInternbrukerOid(): UUID {
+    private fun requireInternbrukerOid(): UUID {
         if(!erInternBruker()) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke internbruker")
         }
