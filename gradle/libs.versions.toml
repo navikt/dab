@@ -1,6 +1,7 @@
 [versions]
 spring-framework = "6.0.5"
-nav-common = "3.2023.02.22_21.28-b300b38ac200"
+nav-common = "3.2023.06.27_13.10-a13ff6f90290"
+poao-tilgang-version = "2023.06.14_13.11-429ca0f50808"
 kotest = "5.5.4"
 junit-version = "5.9.1"
 servlet-api-version = "6.0.0"
@@ -14,7 +15,8 @@ spring-webmcvc = { module = "org.springframework:spring-webmvc", version.ref = "
 servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "servlet-api-version" }
 nav-common-types = { module = "com.github.navikt.common-java-modules:types", version.ref = "nav-common" }
 nav-common-auth = { module = "com.github.navikt.common-java-modules:auth", version.ref = "nav-common" }
-nav-common-abac = { module = "com.github.navikt.common-java-modules:abac", version.ref = "nav-common" }
+poao-tilgang-client = { module = "com.github.navikt.poao-tilgang:client", version.ref = "poao-tilgang-version" }
+
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-version" }
 junit-kotlin = { module = "org.jetbrains.kotlin:kotlin-test-junit5" }
 kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
