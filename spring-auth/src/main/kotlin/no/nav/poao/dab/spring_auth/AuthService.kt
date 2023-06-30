@@ -1,11 +1,12 @@
 package no.nav.poao.dab.spring_auth
 
 import org.slf4j.LoggerFactory
-import no.nav.common.abac.Pep
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.types.identer.*
 import no.nav.poao.dab.spring_auth.EksternBrukerAuth.sjekkEksternBrukerHarTilgang
 import no.nav.poao.dab.spring_auth.SystemAuth.sjekkErSystemkallFraAzureAd
+import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetPolicyInput
+import no.nav.poao_tilgang.client.PoaoTilgangClient
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -15,11 +16,11 @@ import java.util.*
 @Service
 class AuthService(
     private val authContextHolder: AuthContextHolder,
-    private val veilarbPep: Pep,
+    private val poaoTilgangClient: PoaoTilgangClient,
     private val personService: IPersonService,
 ) : IAuthService {
     private val log = LoggerFactory.getLogger(javaClass)
-    private val internBrukerAuth: InternBrukerAuth = InternBrukerAuth(veilarbPep)
+    private val internBrukerAuth: InternBrukerAuth = InternBrukerAuth(poaoTilgangClient, personService)
 
     private fun principal(): NavPrincipal {
         try {
@@ -41,14 +42,14 @@ class AuthService(
         when (principal) {
             is EksternBrukerPrincipal -> sjekkEksternBrukerHarTilgang(principal, ident.toFnr())
             is SystemPrincipal -> sjekkErSystemkallFraAzureAd(authContextHolder.requireIdTokenClaims(), authContextHolder.role.get())
-            is VeilederPrincipal -> internBrukerAuth.sjekkInternbrukerHarLeseTilgangTilPerson(principal.navIdent(), ident.toFnr())
+            is VeilederPrincipal -> internBrukerAuth.sjekkInternbrukerHarLeseTilgangTilPerson(requireInternbrukerOid(), ident.toFnr())
         }
     }
 
     override fun harTilgangTilEnhet(enhet: EnhetId): Boolean {
         return when {
             erEksternBruker() -> return true
-            else -> veilarbPep.harVeilederTilgangTilEnhet(getInnloggetVeilederIdent(), enhet)
+            else -> poaoTilgangClient.evaluatePolicy(NavAnsattTilgangTilNavEnhetPolicyInput(requireInternbrukerOid(), enhet.get())).get()?.isPermit ?: false
         }
     }
     override fun sjekkTilgangTilEnhet(enhet: EnhetId) {
@@ -60,8 +61,14 @@ class AuthService(
     }
 
     override fun sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId: AktorId) {
-        val navIdent = getInnloggetVeilederIdent()
-        internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(navIdent, aktorId)
+        internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(requireInternbrukerOid(), aktorId)
+    }
+
+    private fun requireInternbrukerOid(): UUID {
+        if(!erInternBruker()) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke internbruker")
+        }
+        return authContextHolder.requireOid()
     }
 
     override fun getInnloggetVeilederIdent(): NavIdent {

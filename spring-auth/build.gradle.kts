@@ -7,8 +7,8 @@ tasks.withType<Test>().configureEach {
 }
 
 dependencies {
+    api(libs.poao.tilgang.client)
     implementation(libs.nav.common.auth)
-    implementation(libs.nav.common.abac)
     implementation(libs.nav.common.types)
 
     implementation(libs.slf4j)
