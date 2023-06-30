@@ -20,7 +20,7 @@ class AuthService(
     private val personService: IPersonService,
 ) : IAuthService {
     private val log = LoggerFactory.getLogger(javaClass)
-    private val internBrukerAuth: InternBrukerAuth = InternBrukerAuth(poaoTilgangClient)
+    private val internBrukerAuth: InternBrukerAuth = InternBrukerAuth(poaoTilgangClient, personService)
 
     private fun principal(): NavPrincipal {
         try {
@@ -61,7 +61,6 @@ class AuthService(
     }
 
     override fun sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId: AktorId) {
-        val navIdent = getInnloggetVeilederIdent()
         internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(requereInternbrukerOid(), aktorId)
     }
 
