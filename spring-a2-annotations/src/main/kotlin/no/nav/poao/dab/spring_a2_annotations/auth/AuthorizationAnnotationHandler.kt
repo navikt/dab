@@ -56,9 +56,13 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
                 method.declaringClass.annotations.filter { SUPPORTED_ANNOTATIONS.contains(it.annotationClass) }
     }
 
-    private fun getFnr(request: HttpServletRequest): String {
-        /* Get fnr from headers instead of query when supported by clients */
-        return request.getParameter("fnr")
+    private fun getFnr(request: HttpServletRequest): String? {
+        return if(authService.erEksternBruker()) {
+            authService.getLoggedInnUser().get()
+        } else {
+            /* TODO: Get fnr from headers instead of query when supported by clients */
+            request.getParameter("fnr")
+        }
     }
 
     private fun getAktorId(request: HttpServletRequest): String {
