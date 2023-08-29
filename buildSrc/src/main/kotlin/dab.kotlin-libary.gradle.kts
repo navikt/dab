@@ -5,8 +5,11 @@ plugins {
     java
 }
 
+group = "com.github.navikt"
+
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 kotlin {

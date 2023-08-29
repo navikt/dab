@@ -6,24 +6,3 @@
  * User Manual available at https://docs.gradle.org/7.6/userguide/building_java_projects.html
  */
 
-plugins {
-    `java-library`
-    `maven-publish`
-}
-
-allprojects {
-    repositories {
-        // Use Maven Central for resolving dependencies.
-        mavenCentral()
-        maven("https://jitpack.io")
-    }
-}
-
-tasks.named<Test>("test") {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
-}
-
-subprojects {
-    group = "com.github.navikt"
-}
