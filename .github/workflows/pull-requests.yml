@@ -21,6 +21,6 @@ jobs:
 
       - uses: gradle/gradle-build-action@v2
         with:
-          arguments: publish  -Pversion=${{ github.GITHUB_REF_NAME }}-SNAPSHOT
+          arguments: publish  -Pversion=${{ github.ref_name }}-SNAPSHOT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
