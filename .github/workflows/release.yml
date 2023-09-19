@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  packages: write
+  contents: write
 
 
 jobs:
