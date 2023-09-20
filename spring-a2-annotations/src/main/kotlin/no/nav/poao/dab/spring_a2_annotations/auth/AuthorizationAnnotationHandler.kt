@@ -27,6 +27,8 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
                 if (!authService.erInternBruker())
                     throw ResponseStatusException(HttpStatus.FORBIDDEN, "Bare internbruker tillatt")
             }
+            is Unauthenticated -> {
+            }
         }
     }
 
@@ -47,7 +49,8 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
     }
 
     fun doAuthorizationCheckIfTagged(handlerMethod: Method, request: HttpServletRequest) {
-        getRelevantAnnotations(handlerMethod) // Skip if not tagged
+        getRelevantAnnotations(handlerMethod)
+            .also { if(it.isEmpty()) throw  ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Endpoint not accessible") }
             .map { annotation: Annotation -> authorizeRequest(annotation, request) }
     }
 
@@ -73,7 +76,8 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
         private val SUPPORTED_ANNOTATIONS = listOf(
             AuthorizeFnr::class,
             AuthorizeAktorId::class,
-            OnlyInternBruker::class
+            OnlyInternBruker::class,
+            Unauthenticated::class
         )
     }
 }

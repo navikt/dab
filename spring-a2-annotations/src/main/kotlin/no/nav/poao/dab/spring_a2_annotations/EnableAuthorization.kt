@@ -13,4 +13,4 @@ import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizationInterceptor
 @Retention(RUNTIME)
 @Target(ANNOTATION_CLASS, CLASS)
 @Import(AuthorizationConfiguration::class)
-annotation class EnableAuthorization()
+annotation class EnableAuthorization(val ignore: Array<String> = ["org.springframework"])
