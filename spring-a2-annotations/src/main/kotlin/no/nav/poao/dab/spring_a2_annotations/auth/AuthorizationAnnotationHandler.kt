@@ -16,7 +16,8 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
             is AuthorizeFnr -> {
                 val fnr = Fnr.of(getFnr(request))
                 val allowlist = annotation.allowlist
-                authorizeFnr(fnr, allowlist)
+                val auditlogMessage = annotation.auditlogMessage
+                authorizeFnr(fnr, allowlist, auditlogMessage)
             }
             is AuthorizeAktorId -> {
                 val allowlist = annotation.allowlist
@@ -30,11 +31,15 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
         }
     }
 
-    private fun authorizeFnr(fnr: Fnr, allowlist: Array<String>) {
+    private fun authorizeFnr(fnr: Fnr, allowlist: Array<String>, auditlogMessage: String) {
         if (authService.erSystemBrukerFraAzureAd()) {
             authService.sjekkAtApplikasjonErIAllowList(allowlist)
         } else {
-            authService.sjekkTilgangTilPerson(fnr)
+            val harTilgangTilPerson = authService.harTilgangTilPerson(fnr)
+            if(auditlogMessage.isNotBlank()) {
+                authService.logg(harTilgangTilPerson, auditlogMessage)
+            }
+            harTilgangTilPerson.thorwIfIkkeTilgang()
         }
     }
 

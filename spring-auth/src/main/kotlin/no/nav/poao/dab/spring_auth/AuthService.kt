@@ -1,12 +1,18 @@
 package no.nav.poao.dab.spring_auth
 
-import org.slf4j.LoggerFactory
+import no.nav.common.audit_log.cef.AuthorizationDecision
+import no.nav.common.audit_log.cef.CefMessage
+import no.nav.common.audit_log.cef.CefMessageBuilder
+import no.nav.common.audit_log.cef.CefMessageEvent
+import no.nav.common.audit_log.log.AuditLogger
+import no.nav.common.audit_log.log.AuditLoggerImpl
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.types.identer.*
-import no.nav.poao.dab.spring_auth.EksternBrukerAuth.sjekkEksternBrukerHarTilgang
-import no.nav.poao.dab.spring_auth.SystemAuth.sjekkErSystemkallFraAzureAd
+import no.nav.poao.dab.spring_auth.EksternBrukerAuth.harEksternBrukerHarTilgang
+import no.nav.poao.dab.spring_auth.SystemAuth.harErSystemkallFraAzureAd
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangClient
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -18,9 +24,25 @@ class AuthService(
     private val authContextHolder: AuthContextHolder,
     private val poaoTilgangClient: PoaoTilgangClient,
     private val personService: IPersonService,
+    private val applicationName: String
 ) : IAuthService {
     private val log = LoggerFactory.getLogger(javaClass)
     private val internBrukerAuth: InternBrukerAuth = InternBrukerAuth(poaoTilgangClient, personService)
+
+    private val auditLogger: AuditLogger = AuditLoggerImpl()
+
+    fun logg(resoult: IResoult, message: String) {
+        val message = resoult.getLogbuilder(message)
+        if(message != null) {
+            message
+                .applicationName(applicationName)
+                .name("$applicationName-audit-log")
+                .timeEnded(System.currentTimeMillis())
+
+            auditLogger.log(message.build())
+        }
+
+    }
 
     private fun principal(): NavPrincipal {
         try {
@@ -38,11 +60,15 @@ class AuthService(
     }
 
     override fun sjekkTilgangTilPerson(ident: EksternBrukerId) {
+       harTilgangTilPerson(ident).thorwIfIkkeTilgang()
+    }
+
+    fun harTilgangTilPerson(ident: EksternBrukerId): IResoult {
         val principal = principal()
-        when (principal) {
-            is EksternBrukerPrincipal -> sjekkEksternBrukerHarTilgang(principal, ident.toFnr())
-            is SystemPrincipal -> sjekkErSystemkallFraAzureAd(authContextHolder.requireIdTokenClaims(), authContextHolder.role.get())
-            is VeilederPrincipal -> internBrukerAuth.sjekkInternbrukerHarLeseTilgangTilPerson(requireInternbrukerOid(), ident.toFnr())
+        return when (principal) {
+            is EksternBrukerPrincipal -> harEksternBrukerHarTilgang(principal, ident.toFnr())
+            is SystemPrincipal -> harErSystemkallFraAzureAd(authContextHolder.requireIdTokenClaims(), authContextHolder.role.get())
+            is VeilederPrincipal -> internBrukerAuth.harInternbrukerHarLeseTilgangTilPerson(requireInternbrukerOid(), ident.toFnr())
         }
     }
 
@@ -117,4 +143,46 @@ class AuthService(
     override fun getInnloggetBrukerToken(): String {
         return authContextHolder.requireIdTokenString();
     }
+}
+
+
+interface IResoult {
+    val harTilgang: Boolean
+    fun thorwIfIkkeTilgang()
+    fun getLogbuilder(message: String): CefMessageBuilder?
+
+}
+
+data class Resoult(override val harTilgang: Boolean, val accesedIdnet: Id, val byIdent: String, val melding: String? = null) :
+    IResoult {
+    override fun thorwIfIkkeTilgang() {
+        if (!harTilgang) throw ResponseStatusException(HttpStatus.FORBIDDEN, melding)
+    }
+
+
+
+    override fun getLogbuilder(auditMelding: String): CefMessageBuilder {
+
+        return CefMessage.builder()
+            .event(CefMessageEvent.ACCESS)
+            .authorizationDecision(if (harTilgang) AuthorizationDecision.PERMIT else AuthorizationDecision.DENY)
+            .sourceUserId(byIdent)
+            .extension("msg", "$auditMelding ${melding ?: ""}")
+            .destinationUserId(accesedIdnet.get())
+
+    }
+
+}
+
+data class SystemResoult(override val harTilgang: Boolean) :
+    IResoult {
+    override fun thorwIfIkkeTilgang() {
+        if (!harTilgang) throw ResponseStatusException(HttpStatus.FORBIDDEN)
+    }
+
+    override fun getLogbuilder(message: String): CefMessageBuilder? {
+        return null
+    }
+
+
 }
