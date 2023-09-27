@@ -167,8 +167,9 @@ data class Resoult(override val harTilgang: Boolean, val accesedIdnet: Id, val b
             .event(CefMessageEvent.ACCESS)
             .authorizationDecision(if (harTilgang) AuthorizationDecision.PERMIT else AuthorizationDecision.DENY)
             .sourceUserId(byIdent)
-            .extension("msg", "$auditMelding ${melding ?: ""}")
             .destinationUserId(accesedIdnet.get())
+            .extension("msg", "$auditMelding ${melding ?: ""}")
+
 
     }
 
