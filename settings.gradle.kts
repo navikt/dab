@@ -9,5 +9,4 @@
 
 rootProject.name = "dab"
 include("spring-auth")
-include("spring-auth-base")
 include("spring-a2-annotations")
