@@ -162,17 +162,13 @@ data class Resoult(override val harTilgang: Boolean, val accesedIdnet: Id, val b
 
 
     override fun getLogbuilder(auditMelding: String): CefMessageBuilder {
-
         return CefMessage.builder()
             .event(CefMessageEvent.ACCESS)
             .authorizationDecision(if (harTilgang) AuthorizationDecision.PERMIT else AuthorizationDecision.DENY)
             .sourceUserId(byIdent)
             .destinationUserId(accesedIdnet.get())
             .extension("msg", "$auditMelding ${melding ?: ""}")
-
-
     }
-
 }
 
 data class SystemResoult(override val harTilgang: Boolean) :
