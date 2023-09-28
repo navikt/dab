@@ -37,7 +37,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
         } else {
             val harTilgangTilPerson = authService.harTilgangTilPerson(fnr)
             if(auditlogMessage.isNotBlank()) {
-                authService.logg(harTilgangTilPerson, auditlogMessage)
+                authService.log(harTilgangTilPerson, auditlogMessage)
             }
             harTilgangTilPerson.thorwIfIkkeTilgang()
         }

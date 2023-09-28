@@ -31,17 +31,17 @@ class AuthService(
 
     private val auditLogger: AuditLogger = AuditLoggerImpl()
 
-    fun logg(resoult: IResoult, message: String) {
-        val message = resoult.getLogbuilder(message)
-        if(message != null) {
-            message
-                .applicationName(applicationName)
-                .name("$applicationName-audit-log")
+    fun log(resoult: IResoult, message: String) {
+        val builder = resoult.getLogbuilder()
+        builder?.apply {
+            this.applicationName(applicationName)
+                .extension("msg", message)
+                .event(CefMessageEvent.ACCESS)
+                .name("$applicationName Sporingslogg")
                 .timeEnded(System.currentTimeMillis())
 
-            auditLogger.log(message.build())
+            auditLogger.log(this.build())
         }
-
     }
 
     private fun principal(): NavPrincipal {
@@ -149,7 +149,7 @@ class AuthService(
 interface IResoult {
     val harTilgang: Boolean
     fun thorwIfIkkeTilgang()
-    fun getLogbuilder(message: String): CefMessageBuilder?
+    fun getLogbuilder(): CefMessageBuilder?
 
 }
 
@@ -161,13 +161,11 @@ data class Resoult(override val harTilgang: Boolean, val accesedIdnet: Id, val b
 
 
 
-    override fun getLogbuilder(auditMelding: String): CefMessageBuilder {
-        return CefMessage.builder()
-            .event(CefMessageEvent.ACCESS)
+    override fun getLogbuilder(): CefMessageBuilder {
+         return CefMessage.builder()
             .authorizationDecision(if (harTilgang) AuthorizationDecision.PERMIT else AuthorizationDecision.DENY)
             .sourceUserId(byIdent)
             .destinationUserId(accesedIdnet.get())
-            .extension("msg", "$auditMelding ${melding ?: ""}")
     }
 }
 
@@ -177,7 +175,7 @@ data class SystemResoult(override val harTilgang: Boolean) :
         if (!harTilgang) throw ResponseStatusException(HttpStatus.FORBIDDEN)
     }
 
-    override fun getLogbuilder(message: String): CefMessageBuilder? {
+    override fun getLogbuilder(): CefMessageBuilder? {
         return null
     }
 
