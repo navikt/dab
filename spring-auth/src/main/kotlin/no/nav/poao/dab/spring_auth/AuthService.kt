@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
 
 
 @Service
@@ -61,7 +60,7 @@ class AuthService(
     }
 
     override fun sjekkTilgangTilPerson(ident: EksternBrukerId) {
-       harTilgangTilPerson(ident).thorwIfIkkeTilgang()
+       harTilgangTilPerson(ident).throwIfIkkeTilgang()
     }
 
     fun harTilgangTilPerson(ident: EksternBrukerId): IResoult {
@@ -149,14 +148,14 @@ class AuthService(
 
 interface IResoult {
     val harTilgang: Boolean
-    fun thorwIfIkkeTilgang()
+    fun throwIfIkkeTilgang()
     fun getLogbuilder(): CefMessageBuilder?
 
 }
 
 data class Resoult(override val harTilgang: Boolean, val accesedIdnet: Id, val byIdent: Id, val melding: String? = null) :
     IResoult {
-    override fun thorwIfIkkeTilgang() {
+    override fun throwIfIkkeTilgang() {
         if (!harTilgang) throw ResponseStatusException(HttpStatus.FORBIDDEN, melding)
     }
 
@@ -172,7 +171,7 @@ data class Resoult(override val harTilgang: Boolean, val accesedIdnet: Id, val b
 
 data class SystemResoult(override val harTilgang: Boolean) :
     IResoult {
-    override fun thorwIfIkkeTilgang() {
+    override fun throwIfIkkeTilgang() {
         if (!harTilgang) throw ResponseStatusException(HttpStatus.FORBIDDEN)
     }
 

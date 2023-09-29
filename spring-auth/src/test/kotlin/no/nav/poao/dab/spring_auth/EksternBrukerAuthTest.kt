@@ -33,7 +33,7 @@ class EksternBrukerAuthTest {
                 UserRole.EKSTERN
             ) as EksternBrukerPrincipal,
             brukerId
-        ).thorwIfIkkeTilgang()
+        ).throwIfIkkeTilgang()
     }
 
     @Test
@@ -47,7 +47,7 @@ class EksternBrukerAuthTest {
                     UserRole.EKSTERN
                 ) as EksternBrukerPrincipal,
                 Fnr.of("21212121212")
-            ).thorwIfIkkeTilgang()
+            ).throwIfIkkeTilgang()
         }
     }
 
@@ -62,7 +62,7 @@ class EksternBrukerAuthTest {
                     UserRole.EKSTERN
                 ) as EksternBrukerPrincipal,
                 Fnr.of("21212121212")
-            ).thorwIfIkkeTilgang()
+            ).throwIfIkkeTilgang()
         }
     }
 }
