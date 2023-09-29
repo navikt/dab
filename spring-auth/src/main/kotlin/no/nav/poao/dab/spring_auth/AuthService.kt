@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 
 @Service
@@ -68,7 +69,7 @@ class AuthService(
         return when (principal) {
             is EksternBrukerPrincipal -> harEksternBrukerHarTilgang(principal, ident.toFnr())
             is SystemPrincipal -> harErSystemkallFraAzureAd(authContextHolder.requireIdTokenClaims(), authContextHolder.role.get())
-            is VeilederPrincipal -> internBrukerAuth.harInternbrukerHarLeseTilgangTilPerson(requireInternbrukerOid(), ident.toFnr())
+            is VeilederPrincipal -> internBrukerAuth.harInternbrukerHarLeseTilgangTilPerson(requireInternbrukerOid(), ident.toFnr(), authContextHolder.navIdent.get())
         }
     }
 
@@ -87,7 +88,7 @@ class AuthService(
     }
 
     override fun sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId: AktorId) {
-        internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(requireInternbrukerOid(), aktorId)
+        internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(requireInternbrukerOid(), aktorId, authContextHolder.navIdent.get())
     }
 
     private fun requireInternbrukerOid(): UUID {
@@ -153,7 +154,7 @@ interface IResoult {
 
 }
 
-data class Resoult(override val harTilgang: Boolean, val accesedIdnet: Id, val byIdent: String, val melding: String? = null) :
+data class Resoult(override val harTilgang: Boolean, val accesedIdnet: Id, val byIdent: Id, val melding: String? = null) :
     IResoult {
     override fun thorwIfIkkeTilgang() {
         if (!harTilgang) throw ResponseStatusException(HttpStatus.FORBIDDEN, melding)
@@ -164,7 +165,7 @@ data class Resoult(override val harTilgang: Boolean, val accesedIdnet: Id, val b
     override fun getLogbuilder(): CefMessageBuilder {
          return CefMessage.builder()
             .authorizationDecision(if (harTilgang) AuthorizationDecision.PERMIT else AuthorizationDecision.DENY)
-            .sourceUserId(byIdent)
+            .sourceUserId(byIdent.get())
             .destinationUserId(accesedIdnet.get())
     }
 }
