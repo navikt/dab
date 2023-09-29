@@ -1,20 +1,19 @@
 package no.nav.poao.dab.spring_auth;
 
 import no.nav.common.types.identer.EksternBrukerId
+import no.nav.common.types.identer.NavIdent
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
-import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
-import java.util.UUID
+import java.util.*
 
 internal class InternBrukerAuth(private val pep: PoaoTilgangClient, private val personService: IPersonService) {
-    fun sjekkInternbrukerHarSkriveTilgangTilPerson(navIdent: UUID, aktorId: EksternBrukerId) = sjekkTilgang(navIdent,  aktorId, TilgangType.SKRIVE)
-    fun sjekkInternbrukerHarLeseTilgangTilPerson(navIdent: UUID, aktorId: EksternBrukerId) = sjekkTilgang(navIdent,  aktorId, TilgangType.LESE)
-    fun sjekkTilgang(navIdent: UUID, aktorId: EksternBrukerId, actionId: TilgangType) {
+    fun sjekkInternbrukerHarSkriveTilgangTilPerson(azureNavId: UUID, aktorId: EksternBrukerId, navIdent: NavIdent): Unit = harTilgang(azureNavId,  aktorId, TilgangType.SKRIVE, navIdent).throwIfIkkeTilgang()
+    fun harInternbrukerHarLeseTilgangTilPerson(azureNavId: UUID, aktorId: EksternBrukerId, navIdent: NavIdent): Resoult = harTilgang(azureNavId,  aktorId, TilgangType.LESE, navIdent)
+    fun harTilgang(azureNavId: UUID, aktorId: EksternBrukerId, actionId: TilgangType, navIdent: NavIdent): Resoult {
         val fnr = personService.getFnrForAktorId(aktorId).get()
-        val evaluatePolicy = pep.evaluatePolicy(NavAnsattTilgangTilEksternBrukerPolicyInput(navIdent, actionId, fnr))
+        val evaluatePolicy = pep.evaluatePolicy(NavAnsattTilgangTilEksternBrukerPolicyInput(azureNavId, actionId, fnr))
         val harTilgang = evaluatePolicy.get()?.isPermit ?: false
-        if (!harTilgang) throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        return Resoult(harTilgang= harTilgang, accesedIdnet = aktorId, byIdent= navIdent, melding = null)
     }
 }

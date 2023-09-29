@@ -7,7 +7,7 @@ import no.nav.common.auth.context.UserRole
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.Fnr
-import no.nav.poao.dab.spring_auth.EksternBrukerAuth.sjekkEksternBrukerHarTilgang
+import no.nav.poao.dab.spring_auth.EksternBrukerAuth.harEksternBrukerHarTilgang
 import org.junit.jupiter.api.Test
 import org.springframework.web.server.ResponseStatusException
 
@@ -25,7 +25,7 @@ class EksternBrukerAuthTest {
 
     @Test
     fun skal_tillate_bruker_med_riktig_fnr_i_token() {
-        sjekkEksternBrukerHarTilgang(
+        harEksternBrukerHarTilgang(
             NavPrincipal.of(
                 JWTClaimsSet.Builder()
                     .claim("acr", "Level4")
@@ -33,13 +33,13 @@ class EksternBrukerAuthTest {
                 UserRole.EKSTERN
             ) as EksternBrukerPrincipal,
             brukerId
-        )
+        ).throwIfIkkeTilgang()
     }
 
     @Test
     fun skal_blokkere_bruker_med_annet_fnr_i_token() {
         shouldThrow<ResponseStatusException> {
-            sjekkEksternBrukerHarTilgang(
+            harEksternBrukerHarTilgang(
                 NavPrincipal.of(
                     JWTClaimsSet.Builder()
                         .claim("acr", "Level4")
@@ -47,14 +47,14 @@ class EksternBrukerAuthTest {
                     UserRole.EKSTERN
                 ) as EksternBrukerPrincipal,
                 Fnr.of("21212121212")
-            )
+            ).throwIfIkkeTilgang()
         }
     }
 
     @Test
     fun skal_blokkere_brukere_uten_nivå_4() {
         shouldThrow<ResponseStatusException> {
-            sjekkEksternBrukerHarTilgang(
+            harEksternBrukerHarTilgang(
                 NavPrincipal.of(
                     JWTClaimsSet.Builder()
                         .claim("acr", "Level3")
@@ -62,7 +62,7 @@ class EksternBrukerAuthTest {
                     UserRole.EKSTERN
                 ) as EksternBrukerPrincipal,
                 Fnr.of("21212121212")
-            )
+            ).throwIfIkkeTilgang()
         }
     }
 }

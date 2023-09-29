@@ -15,6 +15,7 @@ spring-webmcvc = { module = "org.springframework:spring-webmvc", version.ref = "
 servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "servlet-api-version" }
 nav-common-types = { module = "com.github.navikt.common-java-modules:types", version.ref = "nav-common" }
 nav-common-auth = { module = "com.github.navikt.common-java-modules:auth", version.ref = "nav-common" }
+nav-common-audit-log = { module = "com.github.navikt.common-java-modules:audit-log", version.ref = "nav-common" }
 poao-tilgang-client = { module = "com.github.navikt.poao-tilgang:client", version.ref = "poao-tilgang-version" }
 
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-version" }
