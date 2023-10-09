@@ -9,5 +9,5 @@ dependencies {
     implementation(libs.servlet.api)
     implementation(libs.slf4j)
     implementation(libs.nimbusds.jose.jwt)
-    implementation(project(":spring-auth"))
+    api(project(":spring-auth"))
 }
