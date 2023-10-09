@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins {
     id("org.jetbrains.kotlin.jvm")
     `java-library`
@@ -5,8 +7,11 @@ plugins {
     java
 }
 
+group = "com.github.navikt.dab"
+
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 kotlin {
@@ -30,6 +35,16 @@ val sourcesJar by tasks.registering(Jar::class) {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = URI("https://maven.pkg.github.com/navikt/dab")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
