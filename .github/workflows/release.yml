@@ -11,7 +11,7 @@ concurrency:
 
 permissions:
   contents: write
-
+  packages: write
 
 jobs:
   release:
@@ -19,34 +19,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: gradle/gradle-build-action@v2
         with:
-          arguments: build
+          arguments: test
 
       - name: Set release tag
         run: |
           export TAG_NAME="$(TZ="Europe/Oslo" date +%Y.%m.%d-%H.%M).$(echo $GITHUB_SHA | cut -c 1-12)"
           echo "RELEASE_TAG=$TAG_NAME" >> $GITHUB_ENV
 
-      - name: Set changelog
-        id: changelog
-        # (Escape newlines see https://github.com/actions/create-release/issues/25)
-        run: |
-          text="$(git --no-pager log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%h %s")"
-          echo "::set-output name=CHANGELOG::$text"
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@latest
+      - uses: gradle/gradle-build-action@v2
+        with:
+          arguments: -Pversion=${{ env.RELEASE_TAG }} publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          release_name: ${{ env.RELEASE_TAG }}
-          # body: |
-          #  Changes in this Release
-          #  ${{ steps.changelog.outputs.CHANGELOG }}"
-          draft: false
-          prerelease: false
