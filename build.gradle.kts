@@ -17,5 +17,5 @@ tasks.named<Test>("test") {
 }
 
 subprojects {
-    group = "com.github.navikt"
+    group = "no.nav.poao.dab"
 }
