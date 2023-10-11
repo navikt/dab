@@ -3,14 +3,13 @@ package no.nav.poao.dab.spring_auth;
 import no.nav.common.types.identer.Fnr
 
 object EksternBrukerAuth {
-    fun harEksternBrukerHarTilgang(navPrincipal: EksternBrukerPrincipal, ident: Fnr): Resoult {
+    fun harEksternBrukerHarTilgang(navPrincipal: EksternBrukerPrincipal, ident: Fnr): AuthResult {
         return if (navPrincipal.brukerIdent() != ident) {
-            Resoult(harTilgang = false, accesedIdnet = navPrincipal.brukerIdent(), byIdent= ident, melding = "ekstern bruker har ikke tilgang til andre brukere enn seg selv")
+            AuthResult.UserFailedResult(subjectIdent = navPrincipal.brukerIdent(), objectIdent = ident, melding = "ekstern bruker har ikke tilgang til andre brukere enn seg selv")
         } else if (!navPrincipal.hasLevel4()) {
-            Resoult(harTilgang = false, accesedIdnet = navPrincipal.brukerIdent(), byIdent= ident, melding = "ekstern bruker har ikke innloggingsnivå 4")
+            AuthResult.UserFailedResult(subjectIdent = navPrincipal.brukerIdent(), objectIdent = ident, melding = "ekstern bruker har ikke innloggingsnivå 4")
         } else {
-            Resoult(harTilgang = true, accesedIdnet = navPrincipal.brukerIdent(), byIdent= ident, melding = null)
+            AuthResult.UserSuccessResult(subjectIdent = navPrincipal.brukerIdent(), objectIdent = ident)
         }
-
     }
 }

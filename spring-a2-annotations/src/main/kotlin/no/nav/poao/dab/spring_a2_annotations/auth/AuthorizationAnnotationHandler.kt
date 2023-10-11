@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.AuthService
+import no.nav.poao.dab.spring_auth.throwIfIkkeTilgang
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.lang.reflect.Method
@@ -37,7 +38,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
         } else {
             val harTilgangTilPerson = authService.harTilgangTilPerson(fnr)
             if(auditlogMessage.isNotBlank()) {
-                authService.log(harTilgangTilPerson, auditlogMessage)
+                authService.logIfNotSystemAccess(harTilgangTilPerson, auditlogMessage)
             }
             harTilgangTilPerson.throwIfIkkeTilgang()
         }
