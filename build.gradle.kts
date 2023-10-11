@@ -11,19 +11,11 @@ plugins {
     `maven-publish`
 }
 
-allprojects {
-    repositories {
-        // Use Maven Central for resolving dependencies.
-        mavenCentral()
-        maven("https://jitpack.io")
-    }
-}
-
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
 
 subprojects {
-    group = "com.github.navikt"
+    group = "no.nav.poao.dab"
 }
