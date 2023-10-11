@@ -156,8 +156,8 @@ sealed class AuthResult {
     class UserSuccessResult(val subjectIdent: Id, val objectIdent: Id): AuthResult()
 
     class UserFailedResult(val subjectIdent: Id, val objectIdent: Id, val melding: String): AuthResult()
-    class UnAuditedSuccessResult(): AuthResult()
-    class UnAuditedFailedResult(): AuthResult()
+    object UnAuditedSuccessResult : AuthResult()
+    object UnAuditedFailedResult : AuthResult()
 }
 
 fun AuthResult.throwIfIkkeTilgang() {
