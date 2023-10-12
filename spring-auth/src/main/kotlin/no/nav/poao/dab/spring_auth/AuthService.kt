@@ -2,14 +2,13 @@ package no.nav.poao.dab.spring_auth
 
 import no.nav.common.audit_log.cef.AuthorizationDecision
 import no.nav.common.audit_log.cef.CefMessage
-import no.nav.common.audit_log.cef.CefMessageBuilder
 import no.nav.common.audit_log.cef.CefMessageEvent
 import no.nav.common.audit_log.log.AuditLogger
 import no.nav.common.audit_log.log.AuditLoggerImpl
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.types.identer.*
 import no.nav.poao.dab.spring_auth.EksternBrukerAuth.harEksternBrukerHarTilgang
-import no.nav.poao.dab.spring_auth.SystemAuth.harErSystemkallFraAzureAd
+import no.nav.poao.dab.spring_auth.SystemAuth.erSystemkallFraAzureAd
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import org.slf4j.LoggerFactory
@@ -31,17 +30,26 @@ class AuthService(
 
     private val auditLogger: AuditLogger = AuditLoggerImpl()
 
-    fun log(resoult: IResoult, message: String) {
-        val builder = resoult.getLogbuilder()
-        builder?.apply {
-            this.applicationName(applicationName)
-                .extension("msg", message)
-                .event(CefMessageEvent.ACCESS)
-                .name("$applicationName Sporingslogg")
-                .timeEnded(System.currentTimeMillis())
-
-            auditLogger.log(this.build())
+    fun logIfNotSystemAccess(result: AuthResult, message: String) {
+        when (result) {
+            is AuthResult.UserFailedResult -> log(false, result.subjectIdent, result.objectIdent, message)
+            is AuthResult.UserSuccessResult -> log(true, result.subjectIdent, result.objectIdent, message)
+            is AuthResult.UnAuditedFailedResult -> return
+            is AuthResult.UnAuditedSuccessResult -> return
         }
+    }
+
+    private fun log(harTilgang: Boolean, subjectIdent: Id, objectIdent: Id, message: String) {
+        CefMessage.builder()
+            .authorizationDecision(if (harTilgang) AuthorizationDecision.PERMIT else AuthorizationDecision.DENY)
+            .sourceUserId(subjectIdent.get())
+            .destinationUserId(objectIdent.get())
+            .applicationName(applicationName)
+            .extension("msg", message)
+            .event(CefMessageEvent.ACCESS)
+            .name("$applicationName Sporingslogg")
+            .timeEnded(System.currentTimeMillis()).build()
+            .let { auditLogger.log(it) }
     }
 
     private fun principal(): NavPrincipal {
@@ -63,11 +71,10 @@ class AuthService(
        harTilgangTilPerson(ident).throwIfIkkeTilgang()
     }
 
-    fun harTilgangTilPerson(ident: EksternBrukerId): IResoult {
-        val principal = principal()
-        return when (principal) {
+    fun harTilgangTilPerson(ident: EksternBrukerId): AuthResult {
+        return when (val principal = principal()) {
             is EksternBrukerPrincipal -> harEksternBrukerHarTilgang(principal, ident.toFnr())
-            is SystemPrincipal -> harErSystemkallFraAzureAd(authContextHolder.requireIdTokenClaims(), authContextHolder.role.get())
+            is SystemPrincipal -> erSystemkallFraAzureAd(authContextHolder.requireIdTokenClaims(), authContextHolder.role.get())
             is VeilederPrincipal -> internBrukerAuth.harInternbrukerHarLeseTilgangTilPerson(requireInternbrukerOid(), ident.toFnr(), authContextHolder.navIdent.get())
         }
     }
@@ -145,39 +152,18 @@ class AuthService(
     }
 }
 
+sealed class AuthResult {
+    class UserSuccessResult(val subjectIdent: Id, val objectIdent: Id): AuthResult()
 
-interface IResoult {
-    val harTilgang: Boolean
-    fun throwIfIkkeTilgang()
-    fun getLogbuilder(): CefMessageBuilder?
-
+    class UserFailedResult(val subjectIdent: Id, val objectIdent: Id, val melding: String): AuthResult()
+    object UnAuditedSuccessResult : AuthResult()
+    object UnAuditedFailedResult : AuthResult()
 }
 
-data class Resoult(override val harTilgang: Boolean, val accesedIdnet: Id, val byIdent: Id, val melding: String? = null) :
-    IResoult {
-    override fun throwIfIkkeTilgang() {
-        if (!harTilgang) throw ResponseStatusException(HttpStatus.FORBIDDEN, melding)
+fun AuthResult.throwIfIkkeTilgang() {
+    when(this) {
+        is AuthResult.UserFailedResult -> throw ResponseStatusException(HttpStatus.FORBIDDEN, this.melding)
+        is AuthResult.UnAuditedFailedResult -> throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        is AuthResult.UserSuccessResult, is AuthResult.UnAuditedSuccessResult -> return
     }
-
-
-
-    override fun getLogbuilder(): CefMessageBuilder {
-         return CefMessage.builder()
-            .authorizationDecision(if (harTilgang) AuthorizationDecision.PERMIT else AuthorizationDecision.DENY)
-            .sourceUserId(byIdent.get())
-            .destinationUserId(accesedIdnet.get())
-    }
-}
-
-data class SystemResoult(override val harTilgang: Boolean) :
-    IResoult {
-    override fun throwIfIkkeTilgang() {
-        if (!harTilgang) throw ResponseStatusException(HttpStatus.FORBIDDEN)
-    }
-
-    override fun getLogbuilder(): CefMessageBuilder? {
-        return null
-    }
-
-
 }
