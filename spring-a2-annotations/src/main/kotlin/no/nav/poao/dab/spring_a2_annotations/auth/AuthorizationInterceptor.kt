@@ -31,10 +31,10 @@ class AuthorizationInterceptor(authService: AuthService) : HandlerInterceptor {
             try {
                 annotationHandler.doAuthorizationCheckIfTagged(handler.method, request)
             } catch (e: Exception) {
-                // Catch all exception except status-exceptions
                 if (e is ResponseStatusException) {
-                    return true
+                    throw e
                 }
+
                 log.error("Failed to process annotation", e)
                 throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
             }
