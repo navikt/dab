@@ -123,8 +123,8 @@ class AuthService(
 
     override fun sjekkAtApplikasjonErIAllowList(allowlist: Array<String>) = sjekkAtApplikasjonErIAllowList(allowlist.asList())
     override fun sjekkAtApplikasjonErIAllowList(allowlist: List<String?>) {
-        val appname = principal().getFullAppName()
-        if (allowlist.isNotEmpty() && allowlist.contains(appname)) {
+        val appname = principal().getAppNameWithoutCluster() ?: ""
+        if (appname.isNotEmpty() && allowlist.isNotEmpty() && allowlist.contains(appname)) {
             return
         }
         log.error("Applikasjon {} er ikke allowlist", appname)

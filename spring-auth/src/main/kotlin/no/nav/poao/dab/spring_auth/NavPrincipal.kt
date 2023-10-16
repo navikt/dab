@@ -4,7 +4,6 @@ import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.common.auth.Constants
 import no.nav.common.auth.Constants.ID_PORTEN_PID_CLAIM
 import no.nav.common.auth.context.UserRole
-import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 
@@ -14,6 +13,10 @@ sealed class NavPrincipal(
     fun hasLevel4() = jwtClaimsSet.getStringClaim("acr") == "Level4"
     private fun isAzure() = jwtClaimsSet.issuer.contains("microsoftonline.com")
     private fun isTokenX() = jwtClaimsSet.issuer.contains("tokendings")
+
+    fun getAppNameWithoutCluster(): String?  {
+        return getFullAppName()?.substringAfter(":")
+    }
 
     fun getFullAppName(): String? { //  "cluster:team:app"
         return when {
