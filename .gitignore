@@ -142,3 +142,6 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/gradle,intellij
+
+# Trenger ikke disse, blir generert ved import
+.idea/**/*.iml
