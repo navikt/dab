@@ -6,6 +6,7 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import org.slf4j.LoggerFactory
@@ -13,28 +14,52 @@ import java.time.LocalDateTime
 
 val logger = LoggerFactory.getLogger("no.nav.dab.poao.azureAuth.AzureClient.kt")
 
-class AzureClient(val config: OauthClientCredentialsConfig) {
-    private val grantType = "client_credentials"
-    private val accessTokens: MutableMap<String, AccessToken> = mutableMapOf()
+typealias Scope = String
+typealias IncomingToken = String
+typealias AccessToken = String
+enum class GrantType(val value: String) {
+    OnBehalfOf("urn:ietf:params:oauth:grant-type:jwt-bearer"),
+    ClientCredentials("client_credentials")
+}
 
+class AzureClient(val config: OauthClientCredentialsConfig, val tokenCache: TokenCache = SimpleTokenCache()) {
     private val httpClient = HttpClient(OkHttp) {
         install(ContentNegotiation) {
             json()
         }
     }
 
-    private suspend fun fetchToken(scope: String): TokenResult {
+    private suspend fun clientCredentialsGrant(scope: Scope): HttpResponse {
         val (clientId, clientSecret, tokenEndpoint) = config
-        return runCatching {
-            val res = httpClient.post(tokenEndpoint) {
-                contentType(ContentType.Application.FormUrlEncoded)
-                formData {
-                    append("client_id", clientId)
-                    append("client_secret", clientSecret)
-                    append("scope", scope)
-                    append("grant_type", grantType)
-                }
+        return httpClient.post(tokenEndpoint) {
+            contentType(ContentType.Application.FormUrlEncoded)
+            formData {
+                append("client_id", clientId)
+                append("client_secret", clientSecret)
+                append("scope", scope)
+                append("grant_type", GrantType.ClientCredentials.value)
             }
+        }
+    }
+
+    private suspend fun onBehalfOfGrant(scope: Scope, assertion: IncomingToken): HttpResponse {
+        val (clientId, clientSecret, tokenEndpoint) = config
+        return httpClient.post(tokenEndpoint) {
+            contentType(ContentType.Application.FormUrlEncoded)
+            formData {
+                append("client_id", clientId)
+                append("client_secret", clientSecret)
+                append("scope", scope)
+                append("grant_type", GrantType.OnBehalfOf.value)
+                append("requested_token_use", "on_behalf_of")
+                append("assertion", assertion)
+            }
+        }
+    }
+
+    private suspend fun fetchToken(scope: Scope, assertion: IncomingToken?): TokenResult {
+        return runCatching {
+            val res = assertion?.let { onBehalfOfGrant(scope, it) } ?: clientCredentialsGrant(scope)
             return when {
                 res.status.isSuccess() -> res.body<TokenResult>()
                 else -> res.body<TokenResponseOauthError>()
@@ -46,29 +71,28 @@ class AzureClient(val config: OauthClientCredentialsConfig) {
         }
     }
 
-    private suspend fun fetchAndStoreAccessToken(scope: String): AccessToken {
-        val response = fetchToken(scope)
+    private suspend fun fetchAndStoreAccessToken(scope: String, assertion: IncomingToken?): AccessTokenWrapper {
+        val response = fetchToken(scope, assertion)
         val tokenResponse = when (response) {
             is TokenResponse -> response
-            else -> {
-                throw Throwable("Failed to get token: ${response}", )
-            }
+            else -> throw Throwable("Failed to get token: $response", )
         }
-        val accessToken = AccessToken(
+        val accessTokenWrapper = AccessTokenWrapper(
             scope = scope,
             token = tokenResponse.accessToken,
             expires = LocalDateTime.now().plusSeconds(tokenResponse.expiresIn)
         )
-        accessTokens[scope] = accessToken
-        return accessToken
+        if (assertion != null) tokenCache.set(scope, assertion, accessTokenWrapper)
+        else tokenCache.set(scope, accessTokenWrapper)
+        return accessTokenWrapper
     }
 
-    suspend fun getAccessToken(scope: String): String {
-        val existingToken = accessTokens[scope]
-        return if (existingToken == null || existingToken.hasExpired()) {
-            fetchAndStoreAccessToken(scope).token
-        } else {
-            existingToken.token
-        }
+    suspend fun getM2MToken(scope: String): AccessToken {
+        val existingToken = tokenCache.get(scope)
+        return existingToken ?: fetchAndStoreAccessToken(scope, null).token
+    }
+    suspend fun getOnBehalfOfToken(scope: String, assertion: IncomingToken): AccessToken {
+        val existingToken = tokenCache.get(scope, assertion)
+        return existingToken ?: fetchAndStoreAccessToken(scope, assertion).token
     }
 }

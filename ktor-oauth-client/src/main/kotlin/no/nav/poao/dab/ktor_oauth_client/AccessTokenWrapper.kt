@@ -2,7 +2,7 @@ package no.nav.poao.dab.ktor_oauth_client
 
 import java.time.LocalDateTime
 
-data class AccessToken(
+data class AccessTokenWrapper(
     val scope: String,
     val token: String,
     val expires: LocalDateTime
