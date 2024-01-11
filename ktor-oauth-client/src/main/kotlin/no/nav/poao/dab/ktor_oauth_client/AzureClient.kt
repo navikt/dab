@@ -9,6 +9,7 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
@@ -25,7 +26,9 @@ enum class GrantType(val value: String) {
 class AzureClient(val config: OauthClientCredentialsConfig, val tokenCache: TokenCache = SimpleTokenCache()) {
     private val httpClient = HttpClient(OkHttp) {
         install(ContentNegotiation) {
-            json()
+            json(Json {
+                ignoreUnknownKeys = true
+            })
         }
     }
 
