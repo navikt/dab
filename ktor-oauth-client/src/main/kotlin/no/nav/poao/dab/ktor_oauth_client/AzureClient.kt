@@ -34,29 +34,30 @@ class AzureClient(val config: OauthClientCredentialsConfig, val tokenCache: Toke
 
     private suspend fun clientCredentialsGrant(scope: Scope): HttpResponse {
         val (clientId, clientSecret, tokenEndpoint) = config
-        return httpClient.post(tokenEndpoint) {
-            contentType(ContentType.Application.FormUrlEncoded)
-            formData {
+        return httpClient.submitForm(
+            url = tokenEndpoint,
+            formParameters = parameters {
+                append("grant_type", GrantType.ClientCredentials.value)
                 append("client_id", clientId)
                 append("client_secret", clientSecret)
                 append("scope", scope)
-                append("grant_type", GrantType.ClientCredentials.value)
             }
-        }
+        )
     }
 
     private suspend fun onBehalfOfGrant(scope: Scope, assertion: IncomingToken): HttpResponse {
         val (clientId, clientSecret, tokenEndpoint) = config
-        return httpClient.post(tokenEndpoint) {
-            contentType(ContentType.Application.FormUrlEncoded)
-            formData {
-                append("client_id", clientId)
-                append("client_secret", clientSecret)
-                append("scope", scope)
-                append("grant_type", GrantType.OnBehalfOf.value)
-                append("requested_token_use", "on_behalf_of")
-                append("assertion", assertion)
-            }
+        return httpClient.submitForm(
+                tokenEndpoint,
+                parameters {
+                    append("grant_type", GrantType.OnBehalfOf.value)
+                    append("client_id", clientId)
+                    append("client_secret", clientSecret)
+                    append("scope", scope)
+                    append("requested_token_use", "on_behalf_of")
+                    append("assertion", assertion)
+                }
+            )
         }
     }
 
