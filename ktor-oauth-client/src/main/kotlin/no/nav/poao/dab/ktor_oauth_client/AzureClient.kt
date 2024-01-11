@@ -1,3 +1,5 @@
+package no.nav.poao.dab.ktor_oauth_client
+
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.okhttp.*
@@ -9,7 +11,7 @@ import io.ktor.serialization.kotlinx.json.*
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
-val logger = LoggerFactory.getLogger("dab.poao.nav.no.azureAuth.AzureClient.kt")
+val logger = LoggerFactory.getLogger("no.nav.dab.poao.azureAuth.AzureClient.kt")
 
 class AzureClient(val config: OauthClientCredentialsConfig) {
     private val grantType = "client_credentials"

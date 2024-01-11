@@ -1,3 +1,5 @@
+package no.nav.poao.dab.ktor_oauth_client
+
 import java.time.LocalDateTime
 
 data class AccessToken(

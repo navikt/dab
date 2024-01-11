@@ -1,3 +1,5 @@
+package no.nav.poao.dab.ktor_oauth_client
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
