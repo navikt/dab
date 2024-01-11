@@ -48,17 +48,16 @@ class AzureClient(val config: OauthClientCredentialsConfig, val tokenCache: Toke
     private suspend fun onBehalfOfGrant(scope: Scope, assertion: IncomingToken): HttpResponse {
         val (clientId, clientSecret, tokenEndpoint) = config
         return httpClient.submitForm(
-                tokenEndpoint,
-                parameters {
-                    append("grant_type", GrantType.OnBehalfOf.value)
-                    append("client_id", clientId)
-                    append("client_secret", clientSecret)
-                    append("scope", scope)
-                    append("requested_token_use", "on_behalf_of")
-                    append("assertion", assertion)
-                }
-            )
-        }
+            tokenEndpoint,
+            parameters {
+                append("grant_type", GrantType.OnBehalfOf.value)
+                append("client_id", clientId)
+                append("client_secret", clientSecret)
+                append("scope", scope)
+                append("requested_token_use", "on_behalf_of")
+                append("assertion", assertion)
+            }
+        )
     }
 
     private suspend fun fetchToken(scope: Scope, assertion: IncomingToken?): TokenResult {
