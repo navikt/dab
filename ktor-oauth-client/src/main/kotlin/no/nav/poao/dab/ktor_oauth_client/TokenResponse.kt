@@ -18,7 +18,7 @@ data class TokenResponseOauthError(
     @SerialName("error_description")
     val errorDescription: String,
     @SerialName("error_codes")
-    val errorCodes: List<String>,
+    val errorCodes: List<Long>,
     @SerialName("timestamp")
     val timestamp: String,
     @SerialName("trace_id")
