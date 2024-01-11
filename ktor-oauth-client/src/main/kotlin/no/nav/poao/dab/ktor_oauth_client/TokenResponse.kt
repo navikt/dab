@@ -18,7 +18,9 @@ data class TokenResponseOauthError(
     @SerialName("error_description")
     val errorDescription: String,
     @SerialName("error_codes")
-    val errorCodes: String
+    val errorCodes: List<String>,
+    @SerialName("timestamp")
+    val timestamp: String
 ): TokenResult()
 
 @Serializable
