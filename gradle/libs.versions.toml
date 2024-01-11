@@ -7,6 +7,7 @@ junit-version = "5.9.1"
 servlet-api-version = "6.0.0"
 slf4j-version = "1.7.36"
 nimbusds = "9.23"
+ktor-version= "2.3.7"
 
 [libraries]
 spring-context = { module = "org.springframework:spring-context", version.ref = "spring-framework" }
@@ -17,6 +18,11 @@ nav-common-types = { module = "no.nav.common:types", version.ref = "nav-common" 
 nav-common-auth = { module = "no.nav.common:auth", version.ref = "nav-common" }
 nav-common-audit-log = { module = "no.nav.common:audit-log", version.ref = "nav-common" }
 poao-tilgang-client = { module = "no.nav.poao-tilgang:client", version.ref = "poao-tilgang-version" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-version" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp-jvm", version.ref = "ktor-version" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor-version" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor-version" }
+ktor-serialization-kotlinx = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor-version" }
 
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-version" }
 junit-kotlin = { module = "org.jetbrains.kotlin:kotlin-test-junit5" }
