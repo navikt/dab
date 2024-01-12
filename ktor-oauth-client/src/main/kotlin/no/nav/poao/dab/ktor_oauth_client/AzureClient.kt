@@ -62,7 +62,7 @@ class AzureClient(val config: OauthClientCredentialsConfig, val tokenCache: Toke
         return runCatching {
             val res = assertion?.let { onBehalfOfGrant(scope, it) } ?: clientCredentialsGrant(scope)
             return when {
-                res.status.isSuccess() -> res.body<TokenResult>()
+                res.status.isSuccess() -> res.body<TokenResponse>()
                 else -> res.body<TokenResponseOauthError>()
                     .also { logger.error("Failed to fetch token: $it", ) }
             }

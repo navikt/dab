@@ -9,6 +9,8 @@ data class TokenResponse(
     val accessToken: String,
     @SerialName("expires_in")
     val expiresIn: Long,
+    @SerialName("token_type")
+    val tokenType: String,
 ): TokenResult()
 
 @Serializable
