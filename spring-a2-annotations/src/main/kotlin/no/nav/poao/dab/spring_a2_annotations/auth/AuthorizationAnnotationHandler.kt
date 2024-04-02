@@ -1,5 +1,7 @@
 package no.nav.poao.dab.spring_a2_annotations.auth
 
+import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.core.JsonToken
 import jakarta.servlet.http.HttpServletRequest
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -61,15 +63,39 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
         return method.annotations.filter { SUPPORTED_ANNOTATIONS.contains(it.annotationClass) } +
                 method.declaringClass.annotations.filter { SUPPORTED_ANNOTATIONS.contains(it.annotationClass) }
     }
-
+    /*
+    Supports fnr in query parameter or as a top-level attribute in a json body
+     */
     private fun getFnr(request: HttpServletRequest): String? {
         return if(authService.erEksternBruker()) {
             authService.getLoggedInnUser().get()
         } else {
-            /* TODO: Get fnr from headers instead of query when supported by clients */
-            request.getParameter("fnr")
+            return request.getParameter("fnr") ?: readJsonAttribute(request, "fnr") ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Missing fnr in parameter or body")
         }
     }
+
+    private val jsonFactory = JsonFactory()
+
+    private fun readJsonAttribute(request: HttpServletRequest, attributeName: String): String? {
+        val eventReader = jsonFactory.createParser(request.inputStream)
+
+        tailrec fun readToken(token: JsonToken?, level: Int) : String?  {
+            if (token == JsonToken.END_OBJECT || token == null) return null
+
+            if (token == JsonToken.START_OBJECT || token == JsonToken.START_ARRAY) return readToken(eventReader.nextToken() , level + 1)
+
+            val fieldName = eventReader.currentName()
+
+            return if (level == 0 && fieldName == attributeName) {
+                eventReader.nextToken()
+                eventReader.text
+            } else {
+                readToken(eventReader.nextToken(), level)
+            }
+        }
+        return readToken(eventReader.nextToken(), 0)
+    }
+
 
     private fun getAktorId(request: HttpServletRequest): String {
         return request.getParameter("aktorId")
