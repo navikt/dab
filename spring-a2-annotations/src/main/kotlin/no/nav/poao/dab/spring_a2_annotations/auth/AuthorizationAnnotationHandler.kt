@@ -63,6 +63,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
         return method.annotations.filter { SUPPORTED_ANNOTATIONS.contains(it.annotationClass) } +
                 method.declaringClass.annotations.filter { SUPPORTED_ANNOTATIONS.contains(it.annotationClass) }
     }
+
     /*
     Supports fnr in query parameter or as a top-level attribute in a json body
      */
@@ -72,6 +73,10 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
         } else {
             return request.getParameter("fnr") ?: readJsonAttribute(request, "fnr") ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Missing fnr in parameter or body")
         }
+    }
+
+    private fun getAktorId(request: HttpServletRequest): String {
+        return request.getParameter("aktorId") ?: readJsonAttribute(request, "aktorId") ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Missing aktorId in parameter or body")
     }
 
     private val jsonFactory = JsonFactory()
@@ -95,11 +100,6 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
             }
         }
         return readToken(eventReader.nextToken(), 0)
-    }
-
-
-    private fun getAktorId(request: HttpServletRequest): String {
-        return request.getParameter("aktorId")
     }
 
     companion object {
