@@ -1,5 +1,7 @@
 package no.nav.poao.dab.spring_a2_annotations.auth
 
+import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.core.JsonToken
 import jakarta.servlet.http.HttpServletRequest
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -62,17 +64,42 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
                 method.declaringClass.annotations.filter { SUPPORTED_ANNOTATIONS.contains(it.annotationClass) }
     }
 
+    /*
+    Supports fnr in query parameter or as a top-level attribute in a json body
+     */
     private fun getFnr(request: HttpServletRequest): String? {
         return if(authService.erEksternBruker()) {
             authService.getLoggedInnUser().get()
         } else {
-            /* TODO: Get fnr from headers instead of query when supported by clients */
-            request.getParameter("fnr")
+            return request.getParameter("fnr") ?: readJsonAttribute(request, "fnr") ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Missing fnr in parameter or body")
         }
     }
 
     private fun getAktorId(request: HttpServletRequest): String {
-        return request.getParameter("aktorId")
+        return request.getParameter("aktorId") ?: readJsonAttribute(request, "aktorId") ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Missing aktorId in parameter or body")
+    }
+
+    private val jsonFactory = JsonFactory()
+
+    internal fun readJsonAttribute(request: HttpServletRequest, attributeName: String): String? {
+        val eventReader = jsonFactory.createParser(request.inputStream)
+
+        fun readToken(token: JsonToken?, level: Int) : String?  {
+            if ((token == JsonToken.END_OBJECT && level == 0 )|| token == null) return null
+            val fieldName = eventReader.currentName()
+
+            return if (level == 1 && attributeName == fieldName) {
+                eventReader.nextToken()
+                eventReader.text
+            } else {
+                val startObject = token == JsonToken.START_OBJECT || token == JsonToken.START_ARRAY
+                val endObject = token == JsonToken.END_OBJECT || token == JsonToken.END_ARRAY
+                val nextLevel = if (startObject) level + 1 else if (endObject) level - 1 else level
+
+                readToken(eventReader.nextToken(), nextLevel)
+            }
+        }
+        return readToken(eventReader.nextToken(), 0)
     }
 
     companion object {
