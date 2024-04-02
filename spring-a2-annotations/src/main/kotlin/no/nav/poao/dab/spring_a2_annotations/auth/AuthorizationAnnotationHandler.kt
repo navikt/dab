@@ -76,7 +76,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
 
     private val jsonFactory = JsonFactory()
 
-    private fun readJsonAttribute(request: HttpServletRequest, attributeName: String): String? {
+    internal fun readJsonAttribute(request: HttpServletRequest, attributeName: String): String? {
         val eventReader = jsonFactory.createParser(request.inputStream)
 
         tailrec fun readToken(token: JsonToken?, level: Int) : String?  {
@@ -86,7 +86,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
 
             val fieldName = eventReader.currentName()
 
-            return if (level == 0 && fieldName == attributeName) {
+            return if (level == 1 && fieldName == attributeName) {
                 eventReader.nextToken()
                 eventReader.text
             } else {

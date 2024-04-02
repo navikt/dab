@@ -9,6 +9,7 @@ slf4j-version = "1.7.36"
 nimbusds = "9.23"
 jackson = "2.17.0"
 ktor-version= "2.3.7"
+mockk-version = "1.13.10"
 
 [libraries]
 spring-context = { module = "org.springframework:spring-context", version.ref = "spring-framework" }
@@ -32,3 +33,4 @@ kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref =
 slf4j = { module= "org.slf4j:slf4j-api", version.ref = "slf4j-version" }
 nimbusds-jose-jwt = { module= "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbusds" }
 jackson-core = {module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson"}
+mockk = { module = "io.mockk:mockk", version.ref = "mockk-version" }

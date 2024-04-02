@@ -11,4 +11,8 @@ dependencies {
     implementation(libs.nimbusds.jose.jwt)
     implementation(project(":spring-auth"))
     implementation(libs.jackson.core)
+    testImplementation(libs.junit.engine)
+    testImplementation(libs.kotest.assertions)
+    testImplementation(libs.kotest.runner)
+    testImplementation(libs.mockk)
 }
