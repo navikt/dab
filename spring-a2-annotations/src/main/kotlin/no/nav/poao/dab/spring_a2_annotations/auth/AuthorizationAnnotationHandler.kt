@@ -3,15 +3,16 @@ package no.nav.poao.dab.spring_a2_annotations.auth
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonToken
 import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletRequestWrapper
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.poao.dab.spring_auth.throwIfIkkeTilgang
 import org.springframework.http.HttpStatus
+import org.springframework.util.StreamUtils
 import org.springframework.web.server.ResponseStatusException
+import java.io.ByteArrayInputStream
 import java.lang.reflect.Method
-import kotlin.collections.List
+
 
 class AuthorizationAnnotationHandler(private val authService: AuthService) {
     private fun authorizeRequest(annotation: Annotation, request: HttpServletRequest) {
@@ -83,9 +84,9 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
     private val jsonFactory = JsonFactory()
 
     internal fun readJsonAttribute(request: HttpServletRequest, attributeName: String): String? {
-        // Use the wrapper to avoid closing the input stream
-        val requestWrapper = HttpServletRequestWrapper(request)
-        val eventReader = jsonFactory.createParser(requestWrapper.inputStream)
+        // Copy stream to avoid closing the original input stream
+        val inputstreamCopy = ByteArrayInputStream(StreamUtils.copyToByteArray(request.inputStream))
+        val eventReader = jsonFactory.createParser(inputstreamCopy)
 
         fun readToken(token: JsonToken?, level: Int) : String?  {
             if ((token == JsonToken.END_OBJECT && level == 0 )|| token == null) return null
