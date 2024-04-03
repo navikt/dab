@@ -3,6 +3,7 @@ package no.nav.poao.dab.spring_a2_annotations.auth
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonToken
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequestWrapper
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.AuthService
@@ -82,7 +83,9 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
     private val jsonFactory = JsonFactory()
 
     internal fun readJsonAttribute(request: HttpServletRequest, attributeName: String): String? {
-        val eventReader = jsonFactory.createParser(request.inputStream)
+        // Use the wrapper to avoid closing the input stream
+        val requestWrapper = HttpServletRequestWrapper(request)
+        val eventReader = jsonFactory.createParser(requestWrapper.inputStream)
 
         fun readToken(token: JsonToken?, level: Int) : String?  {
             if ((token == JsonToken.END_OBJECT && level == 0 )|| token == null) return null
@@ -99,6 +102,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
                 readToken(eventReader.nextToken(), nextLevel)
             }
         }
+
         return readToken(eventReader.nextToken(), 0)
     }
 
