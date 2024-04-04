@@ -7,4 +7,4 @@ package no.nav.poao.dab.spring_a2_annotations.auth
     AnnotationTarget.PROPERTY_SETTER,
     AnnotationTarget.CLASS
 )
-annotation class AuthorizeFnr(val allowlist: Array<String> = [], val auditlogMessage: String = "")
+annotation class AuthorizeFnr(val allowlist: Array<String> = [], val auditlogMessage: String = "", val resourceIdPathParamName: String = "")

@@ -13,12 +13,12 @@ import jakarta.servlet.http.HttpServletResponse
 
 
 @Component
-class AuthorizationInterceptor(authService: AuthService) : HandlerInterceptor {
+class AuthorizationInterceptor(authService: AuthService, ownerProvider: OwnerProvider) : HandlerInterceptor {
     private val log = LoggerFactory.getLogger(javaClass)
     private val annotationHandler: AuthorizationAnnotationHandler
 
     init {
-        annotationHandler = AuthorizationAnnotationHandler(authService)
+        annotationHandler = AuthorizationAnnotationHandler(authService, ownerProvider)
     }
 
     @Throws(Exception::class)
