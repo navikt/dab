@@ -10,9 +10,6 @@ import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.HandlerInterceptor
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestParam
-
 
 @Component
 class AuthorizationInterceptor(authService: AuthService, ownerProvider: OwnerProvider) : HandlerInterceptor {

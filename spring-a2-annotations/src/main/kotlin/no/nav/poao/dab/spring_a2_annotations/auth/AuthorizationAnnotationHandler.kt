@@ -5,7 +5,6 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.poao.dab.spring_auth.throwIfIkkeTilgang
-import org.springframework.core.MethodParameter
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.lang.reflect.Method
@@ -16,8 +15,8 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
         authService.getLoggedInnUser()
         when (annotation) {
             is AuthorizeFnr -> {
-                val pathParam = ((request.getAttribute("org.springframework.web.servlet.HandlerMapping.uriTemplateVariables") as Map<String, String>)[annotation.resourceIdPathParamName]
-                    ?: request.getParameter(annotation.resourceIdPathParamName)) ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ingen ressurs-id")
+                val pathParam = request.getParameterFromPathOrQueryByName(annotation.resourceIdPathParamName)
+                    ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ingen ressurs-id")
                 val fnr = getFnr(request, pathParam)
                 val allowlist = annotation.allowlist
                 val auditlogMessage = annotation.auditlogMessage
@@ -74,6 +73,12 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
                 is ResourceNotFound -> throw ResponseStatusException(HttpStatus.FORBIDDEN, "Unknown resource")
             }
         }
+    }
+
+    private fun HttpServletRequest.getParameterFromPathOrQueryByName(paramName: String): String? {
+        val pathParam = (this.getAttribute("org.springframework.web.servlet.HandlerMapping.uriTemplateVariables") as Map<String, String>)[paramName]
+        val queryParam =  this.getParameter(paramName)
+        return pathParam ?: queryParam
     }
 
     companion object {
