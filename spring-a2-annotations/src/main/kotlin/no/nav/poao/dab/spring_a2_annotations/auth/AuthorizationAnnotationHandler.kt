@@ -13,14 +13,14 @@ import kotlin.reflect.KClass
 
 class AuthorizationAnnotationHandler(private val authService: AuthService, private val ownerProvider: OwnerProvider) {
     private fun authorizeRequest(annotation: Annotation, request: HttpServletRequest) {
-        authService.getLoggedInnUser()
         when (annotation) {
             is AuthorizeFnr -> {
                 val resourceType = annotation.resourceType
                 val fnr = when {
-                    resourceType == NoResource::class -> request.getParameter("fnr")?.let {
-                        Fnr.of(it)
-                    } ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Mangler fnr query parameter")
+                    authService.erEksternBruker() -> authService.getLoggedInnUser() as Fnr
+                    resourceType == NoResource::class -> request.getParameter("fnr")
+                        ?.let { Fnr.of(it) }
+                        ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Mangler fnr query parameter")
                     else -> {
                         val resourceId = request.getParameterValueFromPathOrQueryByName(annotation.resourceIdParamName)
                             ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ingen ressurs-id")
