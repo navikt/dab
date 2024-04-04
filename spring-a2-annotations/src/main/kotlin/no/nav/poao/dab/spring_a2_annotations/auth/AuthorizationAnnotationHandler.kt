@@ -24,7 +24,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
                     else -> {
                         val resourceId = request.getParameterValueFromPathOrQueryByName(annotation.resourceIdParamName)
                             ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ingen ressurs-id")
-                        getFnr(request, resourceId, resourceType)
+                        getFnr(resourceId, resourceType)
                     }
                 }
                 val allowlist = annotation.allowlist
@@ -71,11 +71,10 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
     /*
     Supports fnr in query parameter or as a top-level attribute in a json body
      */
-    private fun getFnr(request: HttpServletRequest, resourceIdParam: String, resourceType: KClass<out ResourceType>): Fnr {
+    private fun getFnr(resourceId: String, resourceType: KClass<out ResourceType>): Fnr {
         return if(authService.erEksternBruker()) {
             authService.getLoggedInnUser() as? Fnr ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "User ID not Fnr")
         } else {
-            val resourceId = request.getParameter(resourceIdParam)
             val resourceOwner = ownerProvider.getOwner(resourceId, resourceType)
             return when (resourceOwner) {
                 is OwnerResultSuccess -> resourceOwner.fnr
