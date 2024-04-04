@@ -1,16 +1,13 @@
 package no.nav.poao.dab.spring_a2_annotations.auth
 
-import com.fasterxml.jackson.core.JsonFactory
-import com.fasterxml.jackson.core.JsonToken
 import jakarta.servlet.http.HttpServletRequest
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.poao.dab.spring_auth.throwIfIkkeTilgang
+import org.springframework.core.MethodParameter
 import org.springframework.http.HttpStatus
-import org.springframework.util.StreamUtils
 import org.springframework.web.server.ResponseStatusException
-import java.io.ByteArrayInputStream
 import java.lang.reflect.Method
 
 
@@ -19,7 +16,8 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
         authService.getLoggedInnUser()
         when (annotation) {
             is AuthorizeFnr -> {
-                val pathParam = annotation.resourceIdPathParamName
+                val pathParam = ((request.getAttribute("org.springframework.web.servlet.HandlerMapping.uriTemplateVariables") as Map<String, String>)[annotation.resourceIdPathParamName]
+                    ?: request.getParameter(annotation.resourceIdPathParamName)) ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ingen ressurs-id")
                 val fnr = getFnr(request, pathParam)
                 val allowlist = annotation.allowlist
                 val auditlogMessage = annotation.auditlogMessage
@@ -71,7 +69,6 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
         } else {
             val resourceId = request.getParameter(resourceIdParam)
             val resourceOwner = ownerProvider.getOwner(resourceId)
-
             return when (resourceOwner) {
                 is OwnerResultSuccess -> resourceOwner.fnr
                 is ResourceNotFound -> throw ResponseStatusException(HttpStatus.FORBIDDEN, "Unknown resource")
