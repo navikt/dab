@@ -5,11 +5,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-open class AuthorizationConfiguration {
+open class AuthorizationConfiguration(private val ownerProvider: OwnerProvider) {
 
     @Bean
     open fun authorizationInterceptor(authService: AuthService): AuthorizationInterceptor {
-        return AuthorizationInterceptor(authService)
+        return AuthorizationInterceptor(authService, ownerProvider)
     }
 
     @Bean
