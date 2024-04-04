@@ -67,44 +67,22 @@ class AuthorizationAnnotationHandler(private val authService: AuthService) {
     }
 
     /*
-    Supports fnr in query parameter or as a top-level attribute in a json body
+    Supports fnr in query parameter or as a request attribute.
+    Attribute is populated from fnr in request body by FnrAktoridAttributeFilter.
+    That filter is dependent on ContentCachingFilter to work.
      */
     private fun getFnr(request: HttpServletRequest): String? {
         return if(authService.erEksternBruker()) {
             authService.getLoggedInnUser().get()
         } else {
-            return request.getParameter("fnr") ?: readJsonAttribute(request, "fnr") ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Missing fnr in parameter or body")
+            val fnr = request.getParameter("fnr") ?: request.getAttribute("fnr") as String? ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Missing fnr in parameter or body")
+            request.setAttribute("fnr", fnr)
+            return fnr
         }
     }
 
     private fun getAktorId(request: HttpServletRequest): String {
-        return request.getParameter("aktorId") ?: readJsonAttribute(request, "aktorId") ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Missing aktorId in parameter or body")
-    }
-
-    private val jsonFactory = JsonFactory()
-
-    internal fun readJsonAttribute(request: HttpServletRequest, attributeName: String): String? {
-        // Copy stream to avoid closing the original input stream
-        val inputstreamCopy = ByteArrayInputStream(StreamUtils.copyToByteArray(request.inputStream))
-        val eventReader = jsonFactory.createParser(inputstreamCopy)
-
-        fun readToken(token: JsonToken?, level: Int) : String?  {
-            if ((token == JsonToken.END_OBJECT && level == 0 )|| token == null) return null
-            val fieldName = eventReader.currentName()
-
-            return if (level == 1 && attributeName == fieldName) {
-                eventReader.nextToken()
-                eventReader.text
-            } else {
-                val startObject = token == JsonToken.START_OBJECT || token == JsonToken.START_ARRAY
-                val endObject = token == JsonToken.END_OBJECT || token == JsonToken.END_ARRAY
-                val nextLevel = if (startObject) level + 1 else if (endObject) level - 1 else level
-
-                readToken(eventReader.nextToken(), nextLevel)
-            }
-        }
-
-        return readToken(eventReader.nextToken(), 0)
+        return request.getParameter("aktorId") ?: request.getAttribute("aktorId") as String? ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Missing aktorId in parameter or body")
     }
 
     companion object {

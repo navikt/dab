@@ -1,4 +1,4 @@
-package no.nav.poao.dab.spring_a2_annotations.auth
+package no.nav.poao.dab.spring_a2_annotations.filter
 
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -6,20 +6,17 @@ import io.mockk.mockk
 import jakarta.servlet.ReadListener
 import jakarta.servlet.ServletInputStream
 import jakarta.servlet.http.HttpServletRequest
-import no.nav.poao.dab.spring_auth.AuthService
 import org.junit.jupiter.api.Test
 
-class AuthorizationAnnotationHandlerTest {
-    private val authService: AuthService = mockk()
-    private val authorizationAnnotationHandler = AuthorizationAnnotationHandler(authService)
-
+class FnrAktorIdAttributeFilterTest {
+    private val fnrAktorIdAttributeFilter = FnrAktorIdAttributeFilter()
     @Test
     fun `Skal kunne lese fnr fra request body`() {
         val json = this::class.java.getResource("/personidentifikatorPaaToppnivaa.json")?.readText()!!
-        val servletRequest: HttpServletRequest = mockk()
+        val servletRequest: CachedBodyHttpServletRequest = mockk()
         every { servletRequest.inputStream } returns MockServletInputStream(json)
 
-        val fnr = authorizationAnnotationHandler.readJsonAttribute(servletRequest, "fnr")
+        val fnr = fnrAktorIdAttributeFilter.readJsonAttribute(servletRequest, "fnr")
 
         fnr shouldBe "01010112345"
     }
@@ -27,10 +24,10 @@ class AuthorizationAnnotationHandlerTest {
     @Test
     fun `Skal kunne lese aktorId fra request body`() {
         val json = this::class.java.getResource("/personidentifikatorPaaToppnivaa.json")?.readText()!!
-        val servletRequest: HttpServletRequest = mockk()
+        val servletRequest: CachedBodyHttpServletRequest = mockk()
         every { servletRequest.inputStream } returns MockServletInputStream(json)
 
-        val fnr = authorizationAnnotationHandler.readJsonAttribute(servletRequest, "aktorId")
+        val fnr = fnrAktorIdAttributeFilter.readJsonAttribute(servletRequest, "aktorId")
 
         fnr shouldBe "1234567890123"
     }
@@ -38,10 +35,10 @@ class AuthorizationAnnotationHandlerTest {
     @Test
     fun `Skal ignorere fnr som ikke ligger på topp-nivå`() {
         val json = this::class.java.getResource("/personidentifikatorIkkePaaToppnivaa.json")?.readText()!!
-        val servletRequest: HttpServletRequest = mockk()
+        val servletRequest: CachedBodyHttpServletRequest = mockk()
         every { servletRequest.inputStream } returns MockServletInputStream(json)
 
-        val fnr = authorizationAnnotationHandler.readJsonAttribute(servletRequest, "fnr")
+        val fnr = fnrAktorIdAttributeFilter.readJsonAttribute(servletRequest, "fnr")
 
         fnr shouldBe null
     }
@@ -49,10 +46,10 @@ class AuthorizationAnnotationHandlerTest {
     @Test
     fun `Skal ignorere aktorId som ikke ligger på topp-nivå`() {
         val json = this::class.java.getResource("/personidentifikatorIkkePaaToppnivaa.json")?.readText()!!
-        val servletRequest: HttpServletRequest = mockk()
+        val servletRequest: CachedBodyHttpServletRequest = mockk()
         every { servletRequest.inputStream } returns MockServletInputStream(json)
 
-        val fnr = authorizationAnnotationHandler.readJsonAttribute(servletRequest, "aktorId")
+        val fnr = fnrAktorIdAttributeFilter.readJsonAttribute(servletRequest, "aktorId")
 
         fnr shouldBe null
     }
@@ -60,10 +57,10 @@ class AuthorizationAnnotationHandlerTest {
     @Test
     fun `Skal kunne lese fnr i request body som ligger på toppnivå etter et objekt`() {
         val json = this::class.java.getResource("/personidentifikatorEtterObjekt.json")?.readText()!!
-        val servletRequest: HttpServletRequest = mockk()
+        val servletRequest: CachedBodyHttpServletRequest = mockk()
         every { servletRequest.inputStream } returns MockServletInputStream(json)
 
-        val fnr = authorizationAnnotationHandler.readJsonAttribute(servletRequest, "fnr")
+        val fnr = fnrAktorIdAttributeFilter.readJsonAttribute(servletRequest, "fnr")
 
         fnr shouldBe "01010112345"
     }
@@ -71,10 +68,10 @@ class AuthorizationAnnotationHandlerTest {
     @Test
     fun `Skal kunne lese aktorId i request body som ligger på toppnivå etter et objekt`() {
         val json = this::class.java.getResource("/personidentifikatorEtterObjekt.json")?.readText()!!
-        val servletRequest: HttpServletRequest = mockk()
+        val servletRequest: CachedBodyHttpServletRequest = mockk()
         every { servletRequest.inputStream } returns MockServletInputStream(json)
 
-        val fnr = authorizationAnnotationHandler.readJsonAttribute(servletRequest, "aktorId")
+        val fnr = fnrAktorIdAttributeFilter.readJsonAttribute(servletRequest, "aktorId")
 
         fnr shouldBe "1234567890123"
     }
