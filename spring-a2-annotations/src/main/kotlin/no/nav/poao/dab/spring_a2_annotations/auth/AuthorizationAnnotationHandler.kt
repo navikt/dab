@@ -30,6 +30,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
                 val allowlist = annotation.allowlist
                 val auditlogMessage = annotation.auditlogMessage
                 authorizeFnr(fnr, allowlist, auditlogMessage)
+                request.setAttribute("fnr", fnr)
             }
             is OnlyInternBruker -> {
                 if (!authService.erInternBruker())
@@ -47,14 +48,6 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
                 authService.logIfNotSystemAccess(harTilgangTilPerson, auditlogMessage)
             }
             harTilgangTilPerson.throwIfIkkeTilgang()
-        }
-    }
-
-    private fun authorizeAktorId(aktorId: AktorId, allowlist: Array<String>) {
-        when {
-            authService.erInternBruker() -> authService.sjekkTilgangTilPerson(aktorId)
-            authService.erSystemBruker() -> authService.sjekkAtApplikasjonErIAllowList(allowlist)
-            authService.erEksternBruker() -> throw ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker ikke tillatt")
         }
     }
 
