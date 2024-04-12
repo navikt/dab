@@ -2,6 +2,7 @@ package no.nav.poao.dab.spring_a2_annotations.auth
 
 import jakarta.servlet.http.HttpServletRequest
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.poao.dab.spring_auth.throwIfIkkeTilgang
@@ -18,9 +19,8 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
                 val resourceType = annotation.resourceType
                 val fnr = when {
                     authService.erEksternBruker() -> authService.getLoggedInnUser() as Fnr
-                    resourceType == NoResource::class -> request.getParameter("fnr")
-                        ?.let { Fnr.of(it) }
-                        ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Mangler fnr query parameter")
+                    resourceType == NoResource::class -> request.aktorIdOrFnrFromQuery()
+                        ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Mangler fnr/aktorId query parameter")
                     else -> {
                         val resourceId = request.getParameterValueFromPathOrQueryByName(annotation.resourceIdParamName)
                             ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ingen ressurs-id")
@@ -39,7 +39,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
         }
     }
 
-    private fun authorizeFnr(fnr: Fnr, allowlist: Array<String>, auditlogMessage: String) {
+    private fun authorizeFnr(fnr: EksternBrukerId, allowlist: Array<String>, auditlogMessage: String) {
         if (authService.erSystemBrukerFraAzureAd()) {
             authService.sjekkAtApplikasjonErIAllowList(allowlist)
         } else {
@@ -74,6 +74,12 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
                 is ResourceNotFound -> throw ResponseStatusException(HttpStatus.FORBIDDEN, "Unknown resource")
             }
         }
+    }
+
+    private fun HttpServletRequest.aktorIdOrFnrFromQuery(): EksternBrukerId? {
+        val fnr = this.getParameter("fnr")?.let { Fnr.of(it) }
+        val aktorId = this.getParameter("aktorId")?.let { AktorId.of(it) }
+        return fnr ?: aktorId
     }
 
     private fun HttpServletRequest.getParameterValueFromPathOrQueryByName(paramName: String): String? {
