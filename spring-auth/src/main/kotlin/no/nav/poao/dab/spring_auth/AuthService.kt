@@ -39,6 +39,10 @@ class AuthService(
         }
     }
 
+    override fun auditlog(harTilgang: Boolean, subjectIdent: Id, objectIdent: Id, message: String) {
+        log(harTilgang, subjectIdent, objectIdent, message)
+    }
+
     private fun log(harTilgang: Boolean, subjectIdent: Id, objectIdent: Id, message: String) {
         CefMessage.builder()
             .authorizationDecision(if (harTilgang) AuthorizationDecision.PERMIT else AuthorizationDecision.DENY)
