@@ -6,7 +6,7 @@ interface IAuthService {
     fun sjekkTilgangTilPerson(ident: EksternBrukerId)
     fun harTilgangTilEnhet(enhet: EnhetId): Boolean
     fun sjekkTilgangTilEnhet(enhet: EnhetId)
-    fun sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId: AktorId)
+    fun sjekkInternbrukerHarSkriveTilgangTilPerson(eksternBrukerId: EksternBrukerId)
     fun getInnloggetVeilederIdent(): NavIdent
     fun getLoggedInnUser(): Id
     fun sjekkAtApplikasjonErIAllowList(allowlist: Array<String>)

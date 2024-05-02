@@ -97,8 +97,8 @@ class AuthService(
         }
     }
 
-    override fun sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId: AktorId) {
-        internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(requireInternbrukerOid(), aktorId, authContextHolder.navIdent.get())
+    override fun sjekkInternbrukerHarSkriveTilgangTilPerson(eksternBrukerId: EksternBrukerId) {
+        internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(requireInternbrukerOid(), eksternBrukerId, authContextHolder.navIdent.get())
     }
 
     private fun requireInternbrukerOid(): UUID {
