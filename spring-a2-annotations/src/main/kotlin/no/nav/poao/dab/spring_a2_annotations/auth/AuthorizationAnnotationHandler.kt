@@ -18,7 +18,6 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
         when (annotation) {
             is AuthorizeFnr -> {
                 val resourceType = annotation.resourceType
-                val tilgangsType = annotation.tilgangsType
                 val fnr = when {
                     authService.erEksternBruker() -> authService.getLoggedInnUser() as Fnr
                     resourceType == NoResource::class -> request.aktorIdOrFnrFromQuery()
@@ -31,7 +30,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
                 }
                 val allowlist = annotation.allowlist
                 val auditlogMessage = annotation.auditlogMessage
-                authorizeFnr(fnr, allowlist, auditlogMessage, tilgangsType)
+                authorizeFnr(fnr, allowlist, auditlogMessage, annotation.tilgangsType)
                 request.setAttribute("fnr", fnr)
             }
             is OnlyInternBruker -> {
