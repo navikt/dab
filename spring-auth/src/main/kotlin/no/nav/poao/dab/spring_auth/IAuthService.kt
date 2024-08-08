@@ -3,7 +3,7 @@ package no.nav.poao.dab.spring_auth
 import no.nav.common.types.identer.*
 
 interface IAuthService {
-    fun sjekkTilgangTilPerson(ident: EksternBrukerId)
+    fun sjekkTilgangTilPerson(ident: EksternBrukerId, tilgangsType: TilgangsType)
     fun harTilgangTilEnhet(enhet: EnhetId): Boolean
     fun sjekkTilgangTilEnhet(enhet: EnhetId)
     fun sjekkInternbrukerHarSkriveTilgangTilPerson(eksternBrukerId: EksternBrukerId)

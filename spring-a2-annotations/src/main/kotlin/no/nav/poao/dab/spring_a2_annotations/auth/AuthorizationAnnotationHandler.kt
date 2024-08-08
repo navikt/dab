@@ -5,6 +5,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EksternBrukerId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.AuthService
+import no.nav.poao.dab.spring_auth.TilgangsType
 import no.nav.poao.dab.spring_auth.throwIfIkkeTilgang
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
@@ -17,6 +18,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
         when (annotation) {
             is AuthorizeFnr -> {
                 val resourceType = annotation.resourceType
+                val tilgangsType = annotation.tilgangsType
                 val fnr = when {
                     authService.erEksternBruker() -> authService.getLoggedInnUser() as Fnr
                     resourceType == NoResource::class -> request.aktorIdOrFnrFromQuery()
@@ -29,7 +31,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
                 }
                 val allowlist = annotation.allowlist
                 val auditlogMessage = annotation.auditlogMessage
-                authorizeFnr(fnr, allowlist, auditlogMessage)
+                authorizeFnr(fnr, allowlist, auditlogMessage, tilgangsType)
                 request.setAttribute("fnr", fnr)
             }
             is OnlyInternBruker -> {
@@ -39,11 +41,11 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
         }
     }
 
-    private fun authorizeFnr(fnr: EksternBrukerId, allowlist: Array<String>, auditlogMessage: String) {
+    private fun authorizeFnr(fnr: EksternBrukerId, allowlist: Array<String>, auditlogMessage: String, tilgangsType: TilgangsType) {
         if (authService.erSystemBrukerFraAzureAd()) {
             authService.sjekkAtApplikasjonErIAllowList(allowlist)
         } else {
-            val harTilgangTilPerson = authService.harTilgangTilPerson(fnr)
+            val harTilgangTilPerson = authService.harTilgangTilPerson(fnr, tilgangsType)
             if(auditlogMessage.isNotBlank()) {
                 authService.logIfNotSystemAccess(harTilgangTilPerson, auditlogMessage)
             }
