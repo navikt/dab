@@ -15,6 +15,6 @@ annotation class AuthorizeFnr(
     val auditlogMessage: String = "",
     val resourceIdParamName: String = "",
     val resourceType: KClass<out ResourceType> = NoResource::class,
-    // Default er strengeste tilgang i tilfelle så man ikke glemmer å sjekke skrivetilgang
+    // Default er strengeste tilgang så man ikke glemmer å sjekke skrivetilgang
     val tilgangsType: TilgangsType = TilgangsType.SKRIVE
 )
