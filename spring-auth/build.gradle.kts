@@ -22,4 +22,5 @@ dependencies {
     testImplementation(libs.junit.engine)
     testImplementation(libs.kotest.assertions)
     testImplementation(libs.kotest.runner)
+    testImplementation(libs.mockk)
 }
