@@ -65,4 +65,20 @@ class EksternBrukerAuthTest {
             ).throwIfIkkeTilgang()
         }
     }
+
+
+    @Test
+    fun `skal bruke tilgangsType`() {
+        shouldThrow<ResponseStatusException> {
+            harEksternBrukerHarTilgang(
+                NavPrincipal.of(
+                    JWTClaimsSet.Builder()
+                        .claim("acr", "Level3")
+                        .claim(Constants.ID_PORTEN_PID_CLAIM, brukerId.get()).build(),
+                    UserRole.EKSTERN
+                ) as EksternBrukerPrincipal,
+                Fnr.of("21212121212")
+            ).throwIfIkkeTilgang()
+        }
+    }
 }

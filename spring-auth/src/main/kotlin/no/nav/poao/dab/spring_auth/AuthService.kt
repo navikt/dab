@@ -71,15 +71,17 @@ class AuthService(
         return if (this is Fnr) this else personService.getFnrForAktorId(this)
     }
 
-    override fun sjekkTilgangTilPerson(ident: EksternBrukerId) {
-       harTilgangTilPerson(ident).throwIfIkkeTilgang()
+    override fun sjekkTilgangTilPerson(ident: EksternBrukerId, tilgangsType: TilgangsType) {
+       harTilgangTilPerson(ident, tilgangsType).throwIfIkkeTilgang()
     }
 
-    fun harTilgangTilPerson(ident: EksternBrukerId): AuthResult {
+    fun harTilgangTilPerson(ident: EksternBrukerId, tilgangsType: TilgangsType): AuthResult {
         return when (val principal = principal()) {
             is EksternBrukerPrincipal -> harEksternBrukerHarTilgang(principal, ident.toFnr())
             is SystemPrincipal -> erSystemkallFraAzureAd(authContextHolder.requireIdTokenClaims(), authContextHolder.role.get())
-            is VeilederPrincipal -> internBrukerAuth.harInternbrukerHarLeseTilgangTilPerson(requireInternbrukerOid(), ident.toFnr(), authContextHolder.navIdent.get())
+            is VeilederPrincipal -> {
+                internBrukerAuth.harNavAnsattTilgang(requireInternbrukerOid(), ident.toFnr(), tilgangsType.toPoaoTilgangsType(), authContextHolder.navIdent.get())
+            }
         }
     }
 
