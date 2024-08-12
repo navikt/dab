@@ -72,7 +72,7 @@ class AuthorizationAnnotationHandler(private val authService: AuthService, priva
             val resourceOwner = ownerProvider.getOwner(resourceId, resourceType)
             return when (resourceOwner) {
                 is OwnerResultSuccess -> resourceOwner.fnr
-                is ResourceNotFound -> throw ResponseStatusException(HttpStatus.FORBIDDEN, "Unknown resource")
+                is ResourceNotFound -> throw OwnerNotFoundException("No owner found for resource $resourceType")
             }
         }
     }

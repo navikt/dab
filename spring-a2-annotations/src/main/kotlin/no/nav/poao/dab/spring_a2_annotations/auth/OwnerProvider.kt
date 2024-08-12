@@ -25,3 +25,5 @@ data class OwnerResultSuccess(
 ): OwnerResult
 
 data object ResourceNotFound: OwnerResult
+
+class OwnerNotFoundException(message: String): Exception(message)

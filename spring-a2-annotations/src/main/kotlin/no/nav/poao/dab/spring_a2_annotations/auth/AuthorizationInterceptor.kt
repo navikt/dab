@@ -29,11 +29,11 @@ class AuthorizationInterceptor(authService: AuthService, ownerProvider: OwnerPro
         if (handler is HandlerMethod) {
             try {
                 annotationHandler.doAuthorizationCheckIfTagged(handler.method, request)
+            } catch (e: OwnerNotFoundException) {
+                log.error(e.message, e)
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST)
             } catch (e: Exception) {
-                if (e is ResponseStatusException) {
-                    throw e
-                }
-
+                if (e is ResponseStatusException) throw e
                 log.error("Failed to process annotation", e)
                 throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)
             }
