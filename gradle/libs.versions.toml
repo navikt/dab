@@ -2,13 +2,13 @@
 spring-framework = "6.0.5"
 nav-common = "3.2023.09.13_04.55-a8ff452fbd94"
 poao-tilgang-version = "2023.10.09_13.45-b5ace74e861a"
-kotest = "5.5.4"
+kotest = "5.9.1"
 junit-version = "5.9.1"
 servlet-api-version = "6.0.0"
 slf4j-version = "1.7.36"
 nimbusds = "9.23"
 jackson = "2.17.0"
-ktor-version= "2.3.7"
+ktor-version= "3.0.1"
 mockk-version = "1.13.10"
 
 [libraries]
