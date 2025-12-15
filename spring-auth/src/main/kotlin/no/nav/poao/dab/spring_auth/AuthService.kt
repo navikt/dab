@@ -86,9 +86,12 @@ class AuthService(
     }
 
     override fun harTilgangTilEnhet(enhet: EnhetId): Boolean {
-        return when {
-            erEksternBruker() -> return true
-            else -> poaoTilgangClient.evaluatePolicy(NavAnsattTilgangTilNavEnhetPolicyInput(requireInternbrukerOid(), enhet.get())).get()?.isPermit ?: false
+        return when (principal()) {
+            is EksternBrukerPrincipal -> true
+            is SystemPrincipal -> true
+            is VeilederPrincipal -> poaoTilgangClient.evaluatePolicy(
+                NavAnsattTilgangTilNavEnhetPolicyInput(requireInternbrukerOid(), enhet.get())
+            ).get()?.isPermit ?: false
         }
     }
     override fun sjekkTilgangTilEnhet(enhet: EnhetId) {
