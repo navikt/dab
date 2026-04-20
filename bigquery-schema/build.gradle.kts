@@ -13,12 +13,10 @@ dependencies {
 
     // testFixtures: basisklasse for Datastream-kontrakttester.
     // Konsumenter legger til testImplementation(testFixtures("...")) for å bruke denne.
-    testFixturesApi(libs.spring.jdbc)
     testFixturesApi(libs.junit.engine)
     testFixturesApi(libs.assertj.core)
     testFixturesImplementation(platform(libs.google.cloud.bom))
     testFixturesImplementation(libs.google.cloud.bigquery)
-
     testImplementation(libs.junit.kotlin)
     testImplementation(libs.junit.engine)
     testImplementation(libs.mockk)
