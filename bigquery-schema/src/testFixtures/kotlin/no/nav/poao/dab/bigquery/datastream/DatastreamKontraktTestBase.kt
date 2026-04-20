@@ -2,15 +2,17 @@ package no.nav.poao.dab.bigquery.datastream
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.jdbc.core.JdbcTemplate
+import java.sql.Connection
+import javax.sql.DataSource
 
 /**
  * Abstrakt basisklasse for tester som verifiserer at en Datastream-kontrakt stemmer overens
  * med det faktiske databaseskjemaet i Postgres.
  *
- * ## Hva som testes
+ * Klassen er fri for rammeverk-avhengigheter og fungerer med Spring, Ktor eller andre oppsett
+ * som kan tilby en `javax.sql.DataSource`.
  *
- * Klassen inneholder tre tester som kjøres mot en innebygd eller ekstern Postgres-instans:
+ * ## Hva som testes
  *
  * 1. **Alle tabeller eksisterer** – verifiserer at tabellene deklarert i kontrakten finnes i DB.
  * 2. **Alle replikerte kolonner eksisterer** – verifiserer at kolonnene i kontrakten finnes på riktig tabell.
@@ -21,26 +23,23 @@ import org.springframework.jdbc.core.JdbcTemplate
  * Den tredje testen er særlig verdifull: den fanger opp nye kolonner som er lagt til i Postgres
  * uten at noen har tatt stilling til om de skal replikeres til BigQuery.
  *
- * ## Bruk
+ * ## Bruk (Spring)
  *
- * Legg til avhengigheten i `build.gradle.kts`:
- * ```kotlin
- * testImplementation(testFixtures("no.nav.poao.dab:bigquery-schema:<versjon>"))
- * ```
- *
- * Opprett en testklasse som extender denne:
  * ```kotlin
  * class DatastreamSkjemaTest : DatastreamKontraktTestBase() {
- *
- *     // Angi hvilke tabeller som skal testes:
  *     override val tabeller = DatastreamKontrakt.tabeller
- *
- *     // Gi tilgang til en JdbcTemplate koblet mot den innebygde Postgres-instansen:
- *     override val jdbcTemplate = LocalDatabaseSingleton.jdbcTemplate
+ *     override val dataSource = LocalDatabaseSingleton.postgres // javax.sql.DataSource
  * }
  * ```
  *
- * De tre testene fra denne klassen arves automatisk og kjøres som en del av testsuiten.
+ * ## Bruk (Ktor / annet)
+ *
+ * ```kotlin
+ * class DatastreamSkjemaTest : DatastreamKontraktTestBase() {
+ *     override val tabeller = DatastreamKontrakt.tabeller
+ *     override val dataSource = hikariDataSource // HikariDataSource implementerer DataSource
+ * }
+ * ```
  *
  * @see Tabell
  */
@@ -49,14 +48,16 @@ abstract class DatastreamKontraktTestBase {
     /** Liste over tabellene som skal verifiseres mot databaseskjema. */
     abstract val tabeller: List<Tabell>
 
-    /** JdbcTemplate koblet mot en Postgres-instans der skjemaet er initialisert (f.eks. embedded Postgres). */
-    abstract val jdbcTemplate: JdbcTemplate
+    /**
+     * DataSource koblet mot en Postgres-instans der skjemaet er initialisert.
+     * Bruker standard `javax.sql.DataSource` slik at klassen er uavhengig av rammeverk.
+     */
+    abstract val dataSource: DataSource
 
     @Test
     fun `alle datastream-tabeller eksisterer i databaseskjema`() {
-        val eksisterendeTabeller = jdbcTemplate.queryForList(
-            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'",
-            String::class.java
+        val eksisterendeTabeller = dataSource.queryForList(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
         )
 
         tabeller.forEach { tabell ->
@@ -72,10 +73,9 @@ abstract class DatastreamKontraktTestBase {
     @Test
     fun `alle replikerte kolonner eksisterer i databaseskjema`() {
         tabeller.forEach { tabell ->
-            val eksisterendeKolonner = jdbcTemplate.queryForList(
+            val eksisterendeKolonner = dataSource.queryForList(
                 "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = ?",
-                String::class.java,
-                tabell.navn
+                tabell.navn,
             )
 
             tabell.kolonner.forEach { kolonne ->
@@ -92,10 +92,9 @@ abstract class DatastreamKontraktTestBase {
     @Test
     fun `alle kolonner på datastream-tabeller er deklarert i kontrakten`() {
         tabeller.forEach { tabell ->
-            val alleKolonnerIDb = jdbcTemplate.queryForList(
+            val alleKolonnerIDb = dataSource.queryForList(
                 "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = ?",
-                String::class.java,
-                tabell.navn
+                tabell.navn,
             ).toSet()
 
             val deklarerteKolonner = tabell.kolonner.map { it.navn }.toSet()
@@ -110,4 +109,18 @@ abstract class DatastreamKontraktTestBase {
                 .isEmpty()
         }
     }
+
+    /**
+     * Kjører en parametrisert spørring og returnerer første kolonne som en liste av strenger.
+     * Minimalt JDBC-wrapper uten rammeverk-avhengighet.
+     */
+    private fun DataSource.queryForList(sql: String, vararg params: Any): List<String> =
+        connection.use { conn: Connection ->
+            conn.prepareStatement(sql).use { stmt ->
+                params.forEachIndexed { i, param -> stmt.setObject(i + 1, param) }
+                stmt.executeQuery().use { rs ->
+                    generateSequence { if (rs.next()) rs.getString(1) else null }.toList()
+                }
+            }
+        }
 }

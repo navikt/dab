@@ -167,31 +167,63 @@ class BigQueryMigrator(
      * Laster og parser alle gyldige migrasjonsfiler fra [migrationLocation] på classpath,
      * sortert etter versjonsnummer (numerisk, ikke leksikografisk).
      *
+     * Fungerer både når ressursene ligger på filsystemet (utvikling/test) og inne i en JAR
+     * (produksjon). `java.io.File` støtter kun `file:`-URIer, mens JARs eksponerer ressurser
+     * via `jar:file:/...!/`-URIer som håndteres separat.
+     *
      * Filer som ikke matcher mønsteret `V{heltall}__{beskrivelse}.sql` ignoreres stille.
      */
     internal fun findMigrationFiles(): List<Migration> {
         val classLoader = Thread.currentThread().contextClassLoader
-        val resourceDir = classLoader.getResource(migrationLocation)
+        val resourceUrl = classLoader.getResource(migrationLocation)
             ?: run {
                 log.warn("Fant ingen migrasjonsmappe på classpath: $migrationLocation")
                 return emptyList()
             }
 
-        return java.io.File(resourceDir.toURI())
+        return when (resourceUrl.protocol) {
+            "file" -> findMigrationFilesOnFilesystem(resourceUrl)
+            "jar"  -> findMigrationFilesInJar(resourceUrl)
+            else   -> {
+                log.warn("Ukjent protokoll for migrasjonsmappe: ${resourceUrl.protocol}")
+                emptyList()
+            }
+        }.sortedBy { it.version }
+    }
+
+    private fun findMigrationFilesOnFilesystem(resourceUrl: java.net.URL): List<Migration> =
+        java.io.File(resourceUrl.toURI())
             .listFiles { f -> f.name.matches(Regex("V\\d+__.+\\.sql")) }
             .orEmpty()
             .map { file ->
-                val (version, description) = parseFileName(file.name)
                 val sql = file.readText()
-                Migration(
-                    version = version,
-                    description = description,
-                    script = file.name,
-                    sql = sql,
-                    checksum = checksum(sql),
-                )
+                val (version, description) = parseFileName(file.name)
+                Migration(version, description, file.name, sql, checksum(sql))
             }
-            .sortedBy { it.version }
+
+    /**
+     * Leser migrasjonsfiler fra inne i en JAR.
+     *
+     * JAR-URL-format: `jar:file:/path/to/app.jar!/db/bigquery`
+     */
+    private fun findMigrationFilesInJar(resourceUrl: java.net.URL): List<Migration> {
+        val jarFilePath = resourceUrl.path.substringBefore("!")
+        val entryPrefix = resourceUrl.path.substringAfter("!/") + "/"
+        return java.util.jar.JarFile(java.net.URI(jarFilePath).path).use { jar ->
+            jar.entries().toList()
+                .filter { entry ->
+                    val fileName = entry.name.removePrefix(entryPrefix)
+                    entry.name.startsWith(entryPrefix) &&
+                    !fileName.contains("/") &&
+                    fileName.matches(Regex("V\\d+__.+\\.sql"))
+                }
+                .map { entry ->
+                    val fileName = entry.name.substringAfterLast("/")
+                    val sql = jar.getInputStream(entry).bufferedReader().readText()
+                    val (version, description) = parseFileName(fileName)
+                    Migration(version, description, fileName, sql, checksum(sql))
+                }
+        }
     }
 
     /**
