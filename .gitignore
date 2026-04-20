@@ -145,3 +145,4 @@ gradle-app.setting
 
 # Trenger ikke disse, blir generert ved import
 .idea/**/*.iml
+.idea/
