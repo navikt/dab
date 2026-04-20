@@ -14,3 +14,4 @@ rootProject.name = "dab"
 include("spring-auth")
 include("spring-a2-annotations")
 include("ktor-oauth-client")
+include("bigquery-schema")

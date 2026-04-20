@@ -10,6 +10,9 @@ nimbusds = "9.23"
 jackson = "2.17.0"
 ktor-version= "3.0.1"
 mockk-version = "1.13.10"
+google-cloud-bom-version = "26.77.0"
+spring-jdbc-version = "6.1.14"
+assertj-version = "3.25.3"
 
 [libraries]
 spring-context = { module = "org.springframework:spring-context", version.ref = "spring-framework" }
@@ -34,3 +37,7 @@ slf4j = { module= "org.slf4j:slf4j-api", version.ref = "slf4j-version" }
 nimbusds-jose-jwt = { module= "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbusds" }
 jackson-core = {module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson"}
 mockk = { module = "io.mockk:mockk", version.ref = "mockk-version" }
+google-cloud-bom = { module = "com.google.cloud:libraries-bom", version.ref = "google-cloud-bom-version" }
+google-cloud-bigquery = { module = "com.google.cloud:google-cloud-bigquery" }
+spring-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "spring-jdbc-version" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj-version" }
