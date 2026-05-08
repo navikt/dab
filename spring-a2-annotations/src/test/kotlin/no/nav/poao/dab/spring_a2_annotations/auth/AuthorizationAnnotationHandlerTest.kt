@@ -11,6 +11,11 @@ import org.junit.jupiter.api.Test
 
 class AuthorizationAnnotationHandlerTest {
     private val authService: AuthService = mockk()
+
+    @Test
+    fun `placeholder-test`() {
+        // junit klager hvis det ikke finnes noen tester i modulen
+    }
 //    private val authorizationAnnotationHandler = AuthorizationAnnotationHandler(authService)
 //
 //    @Test
