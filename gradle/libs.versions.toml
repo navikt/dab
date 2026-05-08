@@ -1,18 +1,17 @@
 [versions]
-spring-framework = "6.0.5"
-nav-common = "3.2023.09.13_04.55-a8ff452fbd94"
-poao-tilgang-version = "2023.10.09_13.45-b5ace74e861a"
-kotest = "5.9.1"
-junit-version = "5.9.1"
-servlet-api-version = "6.0.0"
-slf4j-version = "1.7.36"
-nimbusds = "9.23"
-jackson = "2.17.0"
-ktor-version= "3.0.1"
-mockk-version = "1.13.10"
-google-cloud-bom-version = "26.77.0"
-spring-jdbc-version = "6.1.14"
-assertj-version = "3.25.3"
+spring-framework = "7.0.7"
+nav-common = "4.2026.05.05_06.25-f72fab488a93"
+poao-tilgang-version = "4.2026.05.07_06.50-2df9ab3eceaf"
+kotest = "6.1.11"
+junit-version = "6.0.3"
+servlet-api-version = "6.1.0"
+slf4j-version = "2.0.17"
+nimbusds = "10.9"
+jackson = "3.1.2"
+ktor-version= "3.4.3"
+mockk-version = "1.14.9"
+google-cloud-bom-version = "26.80.0"
+assertj-version = "3.27.7"
 
 [libraries]
 spring-context = { module = "org.springframework:spring-context", version.ref = "spring-framework" }
@@ -35,9 +34,8 @@ kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kote
 kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 slf4j = { module= "org.slf4j:slf4j-api", version.ref = "slf4j-version" }
 nimbusds-jose-jwt = { module= "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbusds" }
-jackson-core = {module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson"}
+jackson-core = {module = "tools.jackson.core:jackson-core", version.ref = "jackson"}
 mockk = { module = "io.mockk:mockk", version.ref = "mockk-version" }
 google-cloud-bom = { module = "com.google.cloud:libraries-bom", version.ref = "google-cloud-bom-version" }
 google-cloud-bigquery = { module = "com.google.cloud:google-cloud-bigquery" }
-spring-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "spring-jdbc-version" }
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj-version" }
