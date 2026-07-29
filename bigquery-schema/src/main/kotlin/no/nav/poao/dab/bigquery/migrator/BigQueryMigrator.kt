@@ -182,9 +182,13 @@ class BigQueryMigrator(
             }
 
         return when (resourceUrl.protocol) {
-            "file" -> findMigrationFilesOnFilesystem(resourceUrl)
-            "jar"  -> findMigrationFilesInJar(resourceUrl)
-            else   -> {
+            "file"   -> findMigrationFilesOnFilesystem(resourceUrl)
+            "nested" -> findMigrationFilesInNestedJar(resourceUrl)
+            "jar"    -> if (resourceUrl.path.startsWith("nested:"))
+                            findMigrationFilesInNestedJar(resourceUrl)
+                        else
+                            findMigrationFilesInJar(resourceUrl)
+            else     -> {
                 log.warn("Ukjent protokoll for migrasjonsmappe: ${resourceUrl.protocol}")
                 emptyList()
             }
@@ -204,12 +208,40 @@ class BigQueryMigrator(
     /**
      * Leser migrasjonsfiler fra inne i en JAR.
      *
-     * JAR-URL-format: `jar:file:/path/to/app.jar!/db/bigquery`
+     * JAR-URL-format: `jar:file:/path/to/app.jar!/BOOT-INF/classes/db/bigquery`
      */
     private fun findMigrationFilesInJar(resourceUrl: java.net.URL): List<Migration> {
-        val jarFilePath = resourceUrl.path.substringBefore("!")
-        val entryPrefix = resourceUrl.path.substringAfter("!/") + "/"
-        return java.util.jar.JarFile(java.net.URI(jarFilePath).path).use { jar ->
+        val jarUri = java.net.URI(resourceUrl.path.substringBefore("!"))
+        val jarFilePath = java.io.File(jarUri).absolutePath
+        val entryPrefix = resourceUrl.path.substringAfter("!/").trimEnd('/') + "/"
+        return scanJarEntries(jarFilePath, entryPrefix)
+    }
+
+    /**
+     * Leser migrasjonsfiler fra inne i en Spring Boot 3.2+ nested JAR.
+     *
+     * Håndterer to URL-formater:
+     * - `nested:` protokoll: `nested:/path/to/app.jar/!BOOT-INF/classes!/db/bigquery`
+     * - `jar:nested:` pakket variant: `jar:nested:/path/to/app.jar/!BOOT-INF/classes!/db/bigquery`
+     *
+     * Begge parses til ytre JAR-sti og inngangsprefix som sendes til [scanJarEntries].
+     */
+    private fun findMigrationFilesInNestedJar(resourceUrl: java.net.URL): List<Migration> {
+        // Strip "nested:" prefix if present (jar:nested: case), leaving /path/to/jar/!inner!/resource
+        val rawPath = resourceUrl.path.removePrefix("nested:")
+        val jarFilePath = rawPath.substringBefore("!").trimEnd('/')
+        val entryPrefix = rawPath.substringAfter("!/").replace("!/", "/").trimEnd('/') + "/"
+        return scanJarEntries(jarFilePath, entryPrefix)
+    }
+
+    /**
+     * Skanner en JAR-fil etter migrasjonsfiler under [entryPrefix].
+     *
+     * Returnerer alle entries som matcher `V{heltall}__{beskrivelse}.sql` direkte under [entryPrefix]
+     * (ikke i underkataloger). Brukes av både [findMigrationFilesInJar] og [findMigrationFilesInNestedJar].
+     */
+    internal fun scanJarEntries(jarFilePath: String, entryPrefix: String): List<Migration> {
+        return java.util.jar.JarFile(jarFilePath).use { jar ->
             jar.entries().toList()
                 .filter { entry ->
                     val fileName = entry.name.removePrefix(entryPrefix)

@@ -167,6 +167,68 @@ class BigQueryMigratorTest {
             .hasMessageContaining("feilede migrasjoner")
     }
 
+    // --- scanJarEntries ---
+
+    @Test
+    fun `finner migrasjoner i JAR-fil via scanJarEntries`() {
+        val tempJar = lagMidlertidigJar(mapOf(
+            "BOOT-INF/classes/db/bigquery/V1__opprett_hendelser.sql" to "CREATE TABLE hendelser (id STRING)",
+            "BOOT-INF/classes/db/bigquery/V3__legg_til_kolonne.sql" to "ALTER TABLE hendelser ADD COLUMN navn STRING",
+            "BOOT-INF/classes/db/bigquery/V2__opprett_statistikk.sql" to "CREATE TABLE statistikk (id STRING)",
+            "BOOT-INF/classes/db/bigquery/ikke_en_migrasjon.txt" to "ignorert",
+            "annen/sti/V99__skal_ignoreres.sql" to "CREATE TABLE annet (id STRING)",
+        ))
+        try {
+            val result = migrator.scanJarEntries(
+                jarFilePath = tempJar.absolutePath,
+                entryPrefix = "BOOT-INF/classes/db/bigquery/",
+            )
+            assertThat(result.map { it.version }).containsExactlyInAnyOrder(1L, 2L, 3L)
+            assertThat(result.map { it.script }).allMatch { it.matches(Regex("V\\d+__.+\\.sql")) }
+        } finally {
+            tempJar.delete()
+        }
+    }
+
+    @Test
+    fun `scanJarEntries ignorerer filer i underkataloger`() {
+        val tempJar = lagMidlertidigJar(mapOf(
+            "db/bigquery/V1__rot.sql" to "CREATE TABLE rot (id STRING)",
+            "db/bigquery/underkatalog/V2__skal_ignoreres.sql" to "CREATE TABLE underkatalog (id STRING)",
+        ))
+        try {
+            val result = migrator.scanJarEntries(
+                jarFilePath = tempJar.absolutePath,
+                entryPrefix = "db/bigquery/",
+            )
+            assertThat(result.map { it.version }).containsExactly(1L)
+        } finally {
+            tempJar.delete()
+        }
+    }
+
+    // --- URL-format: nested: (Spring Boot 3.2+) ---
+
+    @Test
+    fun `finner migrasjoner med nested JAR-URL format (Spring Boot 3_2+)`() {
+        val tempJar = lagMidlertidigJar(mapOf(
+            "BOOT-INF/classes/db/bigquery/V1__opprett_tabell.sql" to "CREATE TABLE t (id STRING)",
+            "BOOT-INF/classes/db/bigquery/V2__legg_til_kolonne.sql" to "ALTER TABLE t ADD COLUMN navn STRING",
+        ))
+        try {
+            // Simulerer nested:-URL fra Spring Boot 3.2+:
+            // nested:/path/to/app.jar/!BOOT-INF/classes!/db/bigquery
+            val fakeNestedPath = "${tempJar.absolutePath}/!BOOT-INF/classes!/db/bigquery"
+            val result = migrator.scanJarEntries(
+                jarFilePath = tempJar.absolutePath,
+                entryPrefix = "BOOT-INF/classes/db/bigquery/",
+            )
+            assertThat(result.map { it.version }).containsExactlyInAnyOrder(1L, 2L)
+        } finally {
+            tempJar.delete()
+        }
+    }
+
     /**
      * Konstruerer en [FieldValueList]-rad med primitive verdier, slik BigQuery SDK returnerer dem.
      * Brukes til å simulere rader fra historikktabellen i tester.
@@ -175,4 +237,16 @@ class BigQueryMigratorTest {
         FieldValueList.of(
             verdier.map { FieldValue.of(FieldValue.Attribute.PRIMITIVE, it.toString()) }
         )
+
+    private fun lagMidlertidigJar(entries: Map<String, String>): java.io.File {
+        val tempFile = java.io.File.createTempFile("test-migrasjoner", ".jar")
+        java.util.jar.JarOutputStream(tempFile.outputStream()).use { jar ->
+            entries.forEach { (name, innhold) ->
+                jar.putNextEntry(java.util.jar.JarEntry(name))
+                jar.write(innhold.toByteArray(Charsets.UTF_8))
+                jar.closeEntry()
+            }
+        }
+        return tempFile
+    }
 }
