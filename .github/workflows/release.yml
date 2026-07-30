@@ -4,6 +4,16 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "bigquery-schema/**"
+      - "buildSrc/**"
+      - "ktor-oauth-client/**"
+      - "spring-a2-annotations/**"
+      - "spring-auth/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - ".github/workflows/release.yml"
+      - "gradle/**"
 
 concurrency:
   group: ${{ github.workflow }}
