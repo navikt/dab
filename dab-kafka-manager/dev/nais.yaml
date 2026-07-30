@@ -40,4 +40,4 @@ spec:
     pool: nav-dev
   env:
     - name: APP_CONFIG_JSON
-      value: {{appTopicConfig}}
+      value: {{{appTopicConfig}}}

@@ -1,5 +1,5 @@
 { "appTopicConfig":
-  {
+  "{
     "topics": [
       {
         "name": "pto.endring-paa-oppfolgingsbruker-v2",
@@ -176,5 +176,5 @@
         "valueDeserializerType": "STRING"
       }
     ]
-  }
+  }"
 }
