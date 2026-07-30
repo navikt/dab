@@ -216,15 +216,14 @@ class BigQueryMigratorTest {
             "BOOT-INF/classes/db/bigquery/V2__legg_til_kolonne.sql" to "ALTER TABLE t ADD COLUMN navn STRING",
         ))
         try {
-            // Faktisk observert URL-format fra Spring Boot 4.x:
-            // protocol=jar path=nested:/app/app.jar/!BOOT-INF/classes/!/db/bigquery
+            // Verifiserer URL-parsingen direkte med den faktisk observerte URL-stien fra Spring Boot 4.x:
+            // protocol=jar, path=nested:/app/app.jar/!BOOT-INF/classes/!/db/bigquery
             // Merk: trailing slash på "classes/" FØR "!" – dette gir dobbel skråstrek uten riktig parsing
-            val fakeUrl = java.net.URL("jar:nested:${tempJar.absolutePath}/!BOOT-INF/classes/!/db/bigquery")
-            // Kaller migratorens interne logikk direkte via BigQueryMigrator for å teste URL-parsingen
-            val rawPath = fakeUrl.path.removePrefix("nested:")
-            val jarFilePath = rawPath.substringBefore("!").trimEnd('/')
-            val entryPrefix = rawPath.substringAfter("!/")
-                .split("!/")
+            val simulertPath = "nested:${tempJar.absolutePath}/!BOOT-INF/classes/!/db/bigquery"
+            val rawPath = simulertPath.removePrefix("nested:")
+            val parts = rawPath.split("/!")
+            val jarFilePath = parts[0].trimEnd('/')
+            val entryPrefix = parts.drop(1)
                 .map { it.trim('/') }
                 .filter { it.isNotEmpty() }
                 .joinToString("/") + "/"

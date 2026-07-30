@@ -226,17 +226,18 @@ class BigQueryMigrator(
      * - `nested:` protokoll: `nested:/path/to/app.jar/!BOOT-INF/classes/!/db/bigquery`
      * - `jar:nested:` pakket variant: `jar:nested:/path/to/app.jar/!BOOT-INF/classes/!/db/bigquery`
      *
-     * URL-en inneholder `!/`-separatorer mellom JAR-sti, intern classpath-rot og ressurssti.
+     * Spring Boot bruker `/!` som separator mellom JAR-sti, intern classpath-rot og ressurssti.
      * Disse segmentene trimmes for skråstreker og settes sammen til en JAR-entry-prefix.
      */
     private fun findMigrationFilesInNestedJar(resourceUrl: java.net.URL): List<Migration> {
         // Strip "nested:" prefix if present (jar:nested: case), leaving /path/to/jar/!inner!/resource
         val rawPath = resourceUrl.path.removePrefix("nested:")
-        val jarFilePath = rawPath.substringBefore("!").trimEnd('/')
-        // Split remaining path on "!/" delimiters, trim slashes from each segment, join with "/"
-        // Example: "BOOT-INF/classes/!/db/bigquery" → ["BOOT-INF/classes", "db/bigquery"] → "BOOT-INF/classes/db/bigquery/"
-        val entryPrefix = rawPath.substringAfter("!/")
-            .split("!/")
+        // Spring Boot nested URL format uses "/!" as segment separator:
+        // "/app/app.jar/!BOOT-INF/classes/!/db/bigquery"
+        // → ["/app/app.jar", "BOOT-INF/classes", "/db/bigquery"]
+        val parts = rawPath.split("/!")
+        val jarFilePath = parts[0].trimEnd('/')
+        val entryPrefix = parts.drop(1)
             .map { it.trim('/') }
             .filter { it.isNotEmpty() }
             .joinToString("/") + "/"
