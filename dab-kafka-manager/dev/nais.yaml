@@ -1,0 +1,330 @@
+kind: Application
+apiVersion: nais.io/v1alpha1
+metadata:
+  name: dab-kafka-manager
+  namespace: dab
+  labels:
+    team: dab
+spec:
+  image: europe-north1-docker.pkg.dev/nais-management-233d/poao/kafka-manager:2026.04.13-13.33-52e9b29
+  port: 8080
+  ingresses:
+    - https://dab-kafka-manager.intern.dev.nav.no
+  prometheus:
+    enabled: true
+    path: /internal/prometheus
+  readiness:
+    path: /internal/health/readiness
+    initialDelay: 20
+  liveness:
+    path: /internal/health/liveness
+    initialDelay: 20
+  replicas:
+    min: 1
+    max: 1  # 1 instance is required since in-memory session management is used
+    cpuThresholdPercentage: 75
+  resources:
+    limits:
+      memory: 1024Mi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+  azure:
+    application:
+      enabled: true
+      tenant: nav.no
+      claims:
+        groups:
+          - id: dfc550d0-c5bf-4208-8b2b-3542bb8b5b15 # entra id group dab
+  kafka:
+    pool: nav-dev
+  env:
+    - name: APP_CONFIG_JSON
+      value: >
+        {
+          "topics": [
+            {
+              "name": "pto.endring-paa-oppfolgingsbruker-v2",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.vedtak-sendt-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.kvp-startet-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.kvp-avsluttet-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.kvp-perioder-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.endring-paa-manuell-status-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.endring-paa-ny-for-veileder-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.veileder-tilordnet-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.siste-14a-vedtak-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.siste-oppfolgingsperiode-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.siste-tilordnet-veileder-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.siste-tilordnet-veileder-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-gruppeaktivitetendret-v1-q1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-tiltaksaktivitetendret-v1-q1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-utdanningsaktivitetendret-v1-q1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-aapvedtakendret-v1-q1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-dagpengevedtakendret-v1-q1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-tiltakspengevedtakendret-v1-q1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.stilling-fra-nav-oppdatert-v2",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "AVRO"
+            },
+            {
+              "name": "pto.deling-av-stilling-fra-nav-forespurt-v2",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "AVRO"
+            },
+            {
+              "name": "pto.rekrutteringsbistand-statusoppdatering-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.aktivitet-portefolje-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "obo.portefolje-hendelsesfilter-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.temp-aktivitetdata-json-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.vedtak-14a-fattet-dvh-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "AVRO"
+            },
+            {
+              "name": "pto.oppfolgingsperiode-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "dab.aktivitetskort-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "dab.aktivitetskort-v1.1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "dab.aktivitetskort-idmapping-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "dab.aktivitetskort-feil-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "dab.arbeidsoppfolgingskontortilordninger-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "dab.arbeidsoppfolgingskontortilordninger-v2",
+              "location": "AIVEN",
+              "keyDeserializerType": "LONG",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-tiltakdeltakerendret-v1-q2",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-tiltakendret-v1-q2",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-tiltakgjennomforingendret-v1-q2",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "dab.endring-paa-dialog-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "pto.veileder-har-lest-aktivitetsplanen-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teampam.cv-endret-ekstern-v2",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "AVRO"
+            },
+            {
+               "name": "teampam.samtykke-status-1",
+               "location": "AIVEN",
+               "keyDeserializerType": "STRING",
+               "valueDeserializerType": "AVRO"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-aogruppeaktivitetendret-v1-q1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-aogruppeaktivitetendret-v1-q2",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "obo.tiltakshendelse-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "teamarenanais.aapen-arena-14avedtakiverksatt-v1-q2",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "poao.privat-oppfolgingshendelse-v1",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "poao.siste-oppfolgingsperiode-v2",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "poao.siste-oppfolgingsperiode-v3",
+              "location": "AIVEN",
+              "keyDeserializerType": "LONG",
+              "valueDeserializerType": "STRING"
+            },
+            {
+              "name": "poao.start-oppfolging",
+              "location": "AIVEN",
+              "keyDeserializerType": "STRING",
+              "valueDeserializerType": "STRING"
+            }
+          ]
+        }
+

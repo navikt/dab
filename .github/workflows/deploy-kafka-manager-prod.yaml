@@ -1,0 +1,19 @@
+name: Deploy kafka manager to prod
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "dab-kafka-manager/prod/*.yaml"
+  workflow_dispatch:
+
+jobs:
+  deploy-prod:
+    name: Deploy kafka-manager to prod
+    uses: ./.github/workflows/deploy-kafka-manager.yaml
+    with:
+      env: prod
+    secrets:
+      READER_TOKEN: ${{ secrets.READER_TOKEN }}
+

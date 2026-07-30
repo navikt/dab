@@ -1,0 +1,29 @@
+name: Deploy dab-kafka-manager
+
+on:
+  workflow_call:
+    secrets:
+      READER_TOKEN:
+        required: true
+    inputs:
+      env:
+        description: dev or prod
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy pto-kafka-manager to ${{env}}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # ratchet:actions/checkout@v7
+      - name: Deploy application
+        uses: nais/deploy/actions/deploy@fc3eae3edebabdf67f7592102ae16176d5ba3b5f # ratchet:nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: ${{env}}-gcp
+          RESOURCE: ./dab-kafka-manager/${{env}}/nais.yaml
+          PRINT_PAYLOAD: true
