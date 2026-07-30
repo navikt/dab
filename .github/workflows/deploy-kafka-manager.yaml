@@ -26,5 +26,5 @@ jobs:
         env:
           CLUSTER: ${{inputs.env}}-gcp
           RESOURCE: ./dab-kafka-manager/${{inputs.env}}/nais.yaml
-          VARS: ./dab-kafka-manager/topics.yaml
+          VARS: ./dab-kafka-manager/topics.json
           PRINT_PAYLOAD: true
