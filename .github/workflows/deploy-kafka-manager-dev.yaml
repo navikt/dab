@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - "dab-kafka-manager/dev/*.yaml"
+      - ".github/workflows/deploy-kafka-manager.yaml"
+      - ".github/workflows/deploy-kafka-manager-dev.yaml"
   workflow_dispatch:
 
 jobs:
