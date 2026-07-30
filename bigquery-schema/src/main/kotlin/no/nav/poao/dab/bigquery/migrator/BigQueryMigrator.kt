@@ -181,6 +181,8 @@ class BigQueryMigrator(
                 return emptyList()
             }
 
+        log.info("Fant migrasjonsmappe på classpath: protocol=${resourceUrl.protocol} path=${resourceUrl.path}")
+
         return when (resourceUrl.protocol) {
             "file"   -> findMigrationFilesOnFilesystem(resourceUrl)
             "nested" -> findMigrationFilesInNestedJar(resourceUrl)
