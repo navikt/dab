@@ -13,7 +13,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy pto-kafka-manager to ${{env}}
+    name: Deploy pto-kafka-manager to ${{inputs.env}}
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -24,6 +24,6 @@ jobs:
       - name: Deploy application
         uses: nais/deploy/actions/deploy@fc3eae3edebabdf67f7592102ae16176d5ba3b5f # ratchet:nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: ${{env}}-gcp
-          RESOURCE: ./dab-kafka-manager/${{env}}/nais.yaml
+          CLUSTER: ${{inputs.env}}-gcp
+          RESOURCE: ./dab-kafka-manager/${{inputs.env}}/nais.yaml
           PRINT_PAYLOAD: true
