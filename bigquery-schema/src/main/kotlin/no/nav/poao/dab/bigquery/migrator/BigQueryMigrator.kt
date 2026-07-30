@@ -223,16 +223,23 @@ class BigQueryMigrator(
      * Leser migrasjonsfiler fra inne i en Spring Boot 3.2+ nested JAR.
      *
      * Håndterer to URL-formater:
-     * - `nested:` protokoll: `nested:/path/to/app.jar/!BOOT-INF/classes!/db/bigquery`
-     * - `jar:nested:` pakket variant: `jar:nested:/path/to/app.jar/!BOOT-INF/classes!/db/bigquery`
+     * - `nested:` protokoll: `nested:/path/to/app.jar/!BOOT-INF/classes/!/db/bigquery`
+     * - `jar:nested:` pakket variant: `jar:nested:/path/to/app.jar/!BOOT-INF/classes/!/db/bigquery`
      *
-     * Begge parses til ytre JAR-sti og inngangsprefix som sendes til [scanJarEntries].
+     * URL-en inneholder `!/`-separatorer mellom JAR-sti, intern classpath-rot og ressurssti.
+     * Disse segmentene trimmes for skråstreker og settes sammen til en JAR-entry-prefix.
      */
     private fun findMigrationFilesInNestedJar(resourceUrl: java.net.URL): List<Migration> {
         // Strip "nested:" prefix if present (jar:nested: case), leaving /path/to/jar/!inner!/resource
         val rawPath = resourceUrl.path.removePrefix("nested:")
         val jarFilePath = rawPath.substringBefore("!").trimEnd('/')
-        val entryPrefix = rawPath.substringAfter("!/").replace("!/", "/").trimEnd('/') + "/"
+        // Split remaining path on "!/" delimiters, trim slashes from each segment, join with "/"
+        // Example: "BOOT-INF/classes/!/db/bigquery" → ["BOOT-INF/classes", "db/bigquery"] → "BOOT-INF/classes/db/bigquery/"
+        val entryPrefix = rawPath.substringAfter("!/")
+            .split("!/")
+            .map { it.trim('/') }
+            .filter { it.isNotEmpty() }
+            .joinToString("/") + "/"
         return scanJarEntries(jarFilePath, entryPrefix)
     }
 
