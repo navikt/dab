@@ -10,6 +10,9 @@ on:
 
 jobs:
   deploy-dev:
+    permissions:
+      id-token: write
+      contents: read
     name: Deploy kafka-manager to dev
     uses: ./.github/workflows/deploy-kafka-manager.yaml
     with:

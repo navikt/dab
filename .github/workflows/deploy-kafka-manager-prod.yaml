@@ -10,6 +10,9 @@ on:
 
 jobs:
   deploy-prod:
+    permissions:
+      id-token: write
+      contents: read
     name: Deploy kafka-manager to prod
     uses: ./.github/workflows/deploy-kafka-manager.yaml
     with:
