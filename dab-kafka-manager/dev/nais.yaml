@@ -6,7 +6,7 @@ metadata:
   labels:
     team: dab
 spec:
-  image: europe-north1-docker.pkg.dev/nais-management-233d/poao/kafka-manager:2026.04.13-13.33-52e9b29
+  image: europe-north1-docker.pkg.dev/nais-management-233d/poao/kafka-manager:2026.08.07-10.04-a80f6f4
   port: 8080
   ingresses:
     - https://dab-kafka-manager.intern.dev.nav.no
