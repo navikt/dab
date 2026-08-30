@@ -80,17 +80,17 @@ class AuthService(
             is EksternBrukerPrincipal -> harEksternBrukerHarTilgang(principal, ident.toFnr())
             is SystemPrincipal -> erSystemkallFraAzureAd(authContextHolder.requireIdTokenClaims(), authContextHolder.role.get())
             is VeilederPrincipal -> {
-                internBrukerAuth.harNavAnsattTilgang(requireInternbrukerOid(), ident.toFnr(), tilgangsType.toPoaoTilgangsType(), authContextHolder.navIdent.get())
+                internBrukerAuth.harNavAnsattTilgang(principal.azureNavId, ident.toFnr(), tilgangsType.toPoaoTilgangsType(), authContextHolder.navIdent.get())
             }
         }
     }
 
     override fun harTilgangTilEnhet(enhet: EnhetId): Boolean {
-        return when (principal()) {
+        return when (val principal = principal()) {
             is EksternBrukerPrincipal -> true
             is SystemPrincipal -> true
             is VeilederPrincipal -> poaoTilgangClient.evaluatePolicy(
-                NavAnsattTilgangTilNavEnhetPolicyInput(requireInternbrukerOid(), enhet.get())
+                NavAnsattTilgangTilNavEnhetPolicyInput(principal.azureNavId, enhet.get())
             ).get()?.isPermit ?: false
         }
     }
@@ -103,14 +103,11 @@ class AuthService(
     }
 
     override fun sjekkInternbrukerHarSkriveTilgangTilPerson(eksternBrukerId: EksternBrukerId) {
-        internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(requireInternbrukerOid(), eksternBrukerId, authContextHolder.navIdent.get())
-    }
-
-    private fun requireInternbrukerOid(): UUID {
-        if(!erInternBruker()) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke internbruker")
+        return when (val principal = principal()) {
+            is EksternBrukerPrincipal -> throw ResponseStatusException(HttpStatus.FORBIDDEN, "Bare intern-brukere kan bruke sjekkInternbrukerHarSkriveTilgangTilPerson, var eksternbruker")
+            is SystemPrincipal -> throw ResponseStatusException(HttpStatus.FORBIDDEN, "Bare intern-brukere kan bruke sjekkInternbrukerHarSkriveTilgangTilPerson, var systembruker")
+            is VeilederPrincipal -> internBrukerAuth.sjekkInternbrukerHarSkriveTilgangTilPerson(principal.azureNavId, eksternBrukerId, authContextHolder.navIdent.get())
         }
-        return authContextHolder.requireOid()
     }
 
     override fun getInnloggetVeilederIdent(): NavIdent {
