@@ -16,6 +16,7 @@ interface IAuthService {
     fun erSystemBruker(): Boolean
     fun erLoggetInn(): Boolean
     fun erSystemBrukerFraAzureAd(): Boolean
+    fun harScope(scope: String): Boolean
     fun getInnloggetBrukerToken(): String
     fun auditlog(harTilgang: Boolean, subjectIdent: Id, objectIdent: Id, message: String)
 }

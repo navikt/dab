@@ -147,6 +147,16 @@ class AuthService(
 
     override fun erSystemBrukerFraAzureAd(): Boolean = principal() is SystemPrincipal
 
+    override fun harScope(scope: String): Boolean {
+        return try {
+            principal().jwtClaimsSet.getStringClaim("scp")
+                ?.split(" ")
+                ?.contains(scope) ?: false
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     private val aktorIdForEksternBruker: Optional<AktorId>
         get() {
             return when {
