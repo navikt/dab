@@ -2,10 +2,12 @@ package no.nav.poao.dab.spring_auth
 
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.common.auth.Constants
+import no.nav.common.auth.Constants.AZURE_OID_CLAIM
 import no.nav.common.auth.Constants.ID_PORTEN_PID_CLAIM
 import no.nav.common.auth.context.UserRole
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
+import java.util.UUID
 
 sealed class NavPrincipal(
     val jwtClaimsSet: JWTClaimsSet
@@ -39,6 +41,8 @@ sealed class NavPrincipal(
 
 class VeilederPrincipal(jwtClaimsSet: JWTClaimsSet): NavPrincipal(jwtClaimsSet) {
     val userRole = UserRole.INTERN
+    val oid = UUID.fromString(jwtClaimsSet.getStringClaim(AZURE_OID_CLAIM))
+    val azureNavId = oid
     fun navIdent() = NavIdent.of(jwtClaimsSet.getStringClaim(Constants.AAD_NAV_IDENT_CLAIM))
 }
 class EksternBrukerPrincipal(jwtClaimsSet: JWTClaimsSet): NavPrincipal(jwtClaimsSet) {

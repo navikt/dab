@@ -36,7 +36,9 @@ class AuthServiceTest {
         val navAnsattOid = UUID.randomUUID()
         val brukerIdent = Fnr(brukerIdent)
         val innloggedClaims = JWTClaimsSet.Builder()
-            .claim(Constants.AAD_NAV_IDENT_CLAIM, navAnsattIdent).build()
+            .claim(Constants.AAD_NAV_IDENT_CLAIM, navAnsattIdent)
+            .claim(Constants.AZURE_OID_CLAIM, navAnsattOid.toString())
+            .build()
         every { authContextHolder.requireIdTokenClaims() } returns innloggedClaims
         every { authContextHolder.role } returns Optional.of(UserRole.INTERN)
         every { authContextHolder.erInternBruker() } returns true
