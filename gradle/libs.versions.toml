@@ -10,7 +10,7 @@ nimbusds = "10.10"
 jackson = "3.2.3"
 ktor-version= "3.6.0"
 mockk-version = "1.14.11"
-google-cloud-bom-version = "26.89.0"
+google-cloud-bom-version = "26.90.0"
 assertj-version = "3.27.7"
 
 [libraries]
