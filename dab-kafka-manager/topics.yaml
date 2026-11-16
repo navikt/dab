@@ -180,6 +180,12 @@ appTopicConfig: >
           "location": "AIVEN",
           "keyDeserializerType": "STRING",
           "valueDeserializerType": "STRING"
+        },
+        {
+            "name": "dab.siste-aktivitet-hendelse-v1",
+            "location": "AIVEN",
+            "keyDeserializerType": "STRING",
+            "valueDeserializerType": "STRING"
         }
       ]
     }
